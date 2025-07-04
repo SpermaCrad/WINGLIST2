@@ -71,6 +71,16 @@
             background-size: cover;
             background-position: center;
             flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+
+
+        .avatar-upload-input {
+            display: none;
         }
 
         /* Mobile profile optimizations */
@@ -862,6 +872,49 @@
             background-size: cover;
             background-position: center;
             margin: 0 auto 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .profile-menu-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .profile-menu-avatar::after {
+            content: '📷';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .profile-menu-avatar:hover::before {
+            opacity: 1;
+        }
+
+        .profile-menu-avatar:hover::after {
+            opacity: 1;
+        }
+
+        .profile-menu-avatar:hover {
+            transform: scale(1.05);
         }
 
         .profile-input-group {
@@ -1052,7 +1105,8 @@
             <div></div>
             <div></div>
             <div class="profile-section">
-                <div class="profile-avatar" id="profileAvatar" onclick="openProfileMenu()" style="cursor: pointer;">👤</div>
+                <div class="profile-avatar" id="profileAvatar" onclick="handleAvatarClick()">👤</div>
+                <input type="file" class="avatar-upload-input" id="avatarUploadInput" accept="image/*" onchange="handleAvatarUpload(event)">
                 <div class="currency">Баланс: <span id="balance" onclick="handleBalanceClick(event)" title="Тройной клик для редактирования">1000</span></div>
             </div>
         </header>
@@ -1228,20 +1282,14 @@
         <div class="profile-menu-modal" id="profileMenuModal">
             <div class="profile-menu-container">
                 <h3 style="color: #ffd700; margin-bottom: 20px;">Настройки профиля</h3>
-                <div class="profile-menu-avatar" id="profileMenuAvatar">👤</div>
+                <div class="profile-menu-avatar" id="profileMenuAvatar" onclick="openAvatarUpload()">👤</div>
                 
                 <div class="profile-input-group">
                     <label for="nicknameInput">Никнейм:</label>
                     <input type="text" id="nicknameInput" placeholder="Введите ваш никнейм" maxlength="20">
                 </div>
                 
-                <div class="profile-input-group">
-                    <label for="avatarInput">Аватар (загрузить avatar.png в проект):</label>
-                    <input type="text" id="avatarInput" placeholder="avatar.png" readonly>
-                    <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;">
-                        Загрузите файл avatar.png в корень проекта для смены аватара
-                    </div>
-                </div>
+
                 
                 <div class="profile-input-group">
                     <label for="promocodeInput">Промокод:</label>
@@ -1282,6 +1330,7 @@
             { name: 'Стартовый инструмент', image: 'dropcase1_1', rarity: 'common', value: 10 }
         ];
         let userNickname = 'Игрок';
+        let userAvatar = null; // Хранит base64 данные аватара
         let balanceClickCount = 0;
         let balanceClickTimer = null;
 
@@ -1943,6 +1992,114 @@
             }
         });
 
+        // Avatar functions
+        function handleAvatarClick() {
+            // Клик на аватар сразу открывает меню профиля
+            openProfileMenu();
+        }
+
+        function openAvatarUpload() {
+            const input = document.getElementById('avatarUploadInput');
+            input.click();
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Проверяем размер файла (5 МБ максимум)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Файл слишком большой! Максимальный размер: 5 МБ');
+                return;
+            }
+
+            // Проверяем тип файла
+            if (!file.type.startsWith('image/')) {
+                alert('Пожалуйста, выберите изображение!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarData = e.target.result;
+                
+                // Создаем превью для подтверждения
+                const preview = document.createElement('div');
+                preview.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: rgba(0,0,0,0.8);
+                    z-index: 10003;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                `;
+                
+                preview.innerHTML = `
+                    <div style="background: #2c3e50; padding: 30px; border-radius: 20px; text-align: center; border: 3px solid #e74c3c;">
+                        <h3 style="color: #ffd700; margin-bottom: 20px;">Предпросмотр аватара</h3>
+                        <div style="
+                            width: 120px; 
+                            height: 120px; 
+                            border-radius: 50%; 
+                            background-image: url('${avatarData}');
+                            background-size: cover;
+                            background-position: center;
+                            margin: 0 auto 20px;
+                            border: 3px solid #ffd700;
+                        "></div>
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <button id="confirmAvatar" style="
+                                background: #27ae60; color: white; border: none; padding: 12px 25px; 
+                                border-radius: 10px; cursor: pointer; font-size: 16px;
+                            ">✅ Установить</button>
+                            <button id="cancelAvatar" style="
+                                background: #e74c3c; color: white; border: none; padding: 12px 25px; 
+                                border-radius: 10px; cursor: pointer; font-size: 16px;
+                            ">❌ Отмена</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(preview);
+                
+                // Обработчики кнопок
+                document.getElementById('confirmAvatar').onclick = () => {
+                    setUserAvatar(avatarData);
+                    document.body.removeChild(preview);
+                };
+                
+                document.getElementById('cancelAvatar').onclick = () => {
+                    document.body.removeChild(preview);
+                };
+            };
+            
+            reader.readAsDataURL(file);
+            
+            // Очищаем input для повторной загрузки того же файла
+            event.target.value = '';
+        }
+
+        function setUserAvatar(avatarData) {
+            userAvatar = avatarData;
+            
+            // Обновляем все аватары на странице
+            const profileAvatar = document.getElementById('profileAvatar');
+            profileAvatar.style.backgroundImage = `url('${avatarData}')`;
+            profileAvatar.style.backgroundSize = 'cover';
+            profileAvatar.style.backgroundPosition = 'center';
+            profileAvatar.textContent = '';
+            
+            // Сохраняем в localStorage
+            saveGameData();
+            
+            console.log('✅ Аватар успешно установлен и сохранён!');
+        }
+
         // Profile menu functions
         function openProfileMenu() {
             const profileMenuModal = document.getElementById('profileMenuModal');
@@ -1952,12 +2109,14 @@
             const promocodeMessage = document.getElementById('promocodeMessage');
             
             // Update avatar preview
-            const currentAvatar = document.getElementById('profileAvatar');
-            profileMenuAvatar.style.backgroundImage = currentAvatar.style.backgroundImage;
-            if (!currentAvatar.style.backgroundImage) {
-                profileMenuAvatar.textContent = currentAvatar.textContent;
-            } else {
+            if (userAvatar) {
+                profileMenuAvatar.style.backgroundImage = `url('${userAvatar}')`;
+                profileMenuAvatar.style.backgroundSize = 'cover';
+                profileMenuAvatar.style.backgroundPosition = 'center';
                 profileMenuAvatar.textContent = '';
+            } else {
+                profileMenuAvatar.style.backgroundImage = 'none';
+                profileMenuAvatar.textContent = '👤';
             }
             
             // Load current nickname
@@ -2462,6 +2621,7 @@
                 balance: balance,
                 inventory: inventory,
                 nickname: userNickname,
+                avatar: userAvatar,
                 winglistItems: winglistItems,
                 usedPromocodes: usedPromocodes
             };
@@ -2478,6 +2638,7 @@
                         { name: 'Стартовый инструмент', image: 'dropcase1_1', rarity: 'common', value: 10 }
                     ];
                     userNickname = gameData.nickname || 'Игрок';
+                    userAvatar = gameData.avatar || null;
                     winglistItems = gameData.winglistItems || [];
                     usedPromocodes = gameData.usedPromocodes || [];
                 } catch (e) {
@@ -2762,22 +2923,35 @@
         // Avatar loading
         function loadAvatar() {
             const avatarEl = document.getElementById('profileAvatar');
-            const avatarImg = new Image();
             
-            avatarImg.onload = () => {
-                avatarEl.style.backgroundImage = `url('avatar.png')`;
+            if (userAvatar) {
+                // Загружаем сохранённый аватар пользователя
+                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
                 avatarEl.style.backgroundSize = 'cover';
                 avatarEl.style.backgroundPosition = 'center';
                 avatarEl.textContent = '';
-            };
-            
-            avatarImg.onerror = () => {
-                // Keep default avatar if no image found
-                avatarEl.style.backgroundImage = 'none';
-                avatarEl.textContent = '👤';
-            };
-            
-            avatarImg.src = 'avatar.png';
+                console.log('✅ Загружен сохранённый аватар пользователя');
+            } else {
+                // Пытаемся загрузить avatar.png как запасной вариант
+                const avatarImg = new Image();
+                
+                avatarImg.onload = () => {
+                    avatarEl.style.backgroundImage = `url('avatar.png')`;
+                    avatarEl.style.backgroundSize = 'cover';
+                    avatarEl.style.backgroundPosition = 'center';
+                    avatarEl.textContent = '';
+                    console.log('✅ Загружен avatar.png');
+                };
+                
+                avatarImg.onerror = () => {
+                    // Оставляем дефолтный аватар
+                    avatarEl.style.backgroundImage = 'none';
+                    avatarEl.textContent = '👤';
+                    console.log('📷 Используется дефолтный аватар');
+                };
+                
+                avatarImg.src = 'avatar.png';
+            }
         }
 
         // Initialize
