@@ -84,6 +84,7 @@
             
             .profile-section {
                 gap: 10px !important;
+                justify-content: center !important; /* Центрируем профиль */
             }
             
             .currency {
@@ -92,12 +93,23 @@
             
             .header {
                 margin-bottom: 15px !important;
+                margin-top: -20px !important; /* Поднимаем профиль выше */
                 padding: 0 10px;
+                justify-content: center !important; /* Центрируем весь header */
+                flex-direction: column !important; /* Вертикальное расположение */
+                align-items: center !important;
+                gap: 10px !important;
             }
             
             .header h1 {
                 font-size: 20px !important;
-                margin: 0 10px !important;
+                margin: 0 !important;
+                order: 2; /* Заголовок вторым */
+            }
+            
+            .header .profile-section {
+                order: 1; /* Профиль первым */
+                margin-bottom: 0 !important;
             }
         }
 
@@ -303,7 +315,7 @@
             display: inline-block;
             width: fit-content;
             min-width: 140px;
-            transform: translateY(-10px) translateX(-5px);
+            transform: translateY(-12px) translateX(5px);
         }
 
         .promo-frame h2 {
@@ -453,7 +465,7 @@
             justify-content: center;
             font-size: 24px;
             background-size: cover;
-            background-position: left center; /* Сдвигаем изображения влево */
+            background-position: center center; /* Центрируем изображения идеально */
             transition: background-image 0.3s ease;
             border: 1px solid #34495e;
         }
@@ -707,20 +719,21 @@
             }
             
             .inventory-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-                gap: 8px;
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
             }
             
             .inventory-item {
-                padding: 8px;
+                padding: 10px;
                 font-size: 10px;
+                min-height: 100px;
             }
             
             .inventory-item-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 16px;
-                margin-bottom: 4px;
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 20px !important;
+                margin-bottom: 6px !important;
             }
         }
 
@@ -731,19 +744,20 @@
 
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
         }
 
         .inventory-item {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 12px;
             text-align: center;
             font-size: 12px;
             position: relative;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 120px;
         }
 
         .inventory-item:hover {
@@ -1202,7 +1216,7 @@
         let balance = 1000;
         let currentItem = null;
         let inventory = [
-            { name: 'Стартовый инструмент', image: 'keys/starter_tool?prompt=basic%20tool%20icon', rarity: 'common', value: 10 }
+            { name: 'Стартовый инструмент', image: 'dropcase1_1', rarity: 'common', value: 10 }
         ];
         let userNickname = 'Игрок';
         let balanceClickCount = 0;
@@ -1210,6 +1224,9 @@
 
         // Загрузка ТВОИХ изображений дропов
         function loadDropImage(imageElement, imageName) {
+            // Очищаем предыдущий контент
+            imageElement.textContent = '';
+            
             const img = new Image();
             img.onload = () => {
                 // Твоё изображение найдено - используем его
@@ -1217,18 +1234,29 @@
                 imageElement.style.backgroundSize = 'cover';
                 imageElement.style.backgroundPosition = 'center';
                 imageElement.textContent = '';
+                
+                console.log(`✅ Загружено изображение: ${imageName}.png`);
             };
             img.onerror = () => {
                 // Твоё изображение НЕ найдено - показываем синий квадрат с "?"
                 imageElement.style.backgroundImage = 'none';
-                imageElement.style.backgroundColor = '#3498db';
+                const currentBg = imageElement.style.backgroundColor;
+                if (!currentBg || currentBg === '') {
+                    imageElement.style.backgroundColor = '#3498db';
+                }
                 imageElement.textContent = '?';
                 imageElement.style.display = 'flex';
                 imageElement.style.alignItems = 'center';
                 imageElement.style.justifyContent = 'center';
-                imageElement.style.fontSize = '24px';
+                
+                // Адаптивный размер шрифта в зависимости от размера элемента
+                const elementWidth = imageElement.offsetWidth || 80;
+                const fontSize = Math.max(16, elementWidth * 0.4);
+                imageElement.style.fontSize = `${fontSize}px`;
                 imageElement.style.color = 'white';
                 imageElement.style.fontWeight = 'bold';
+                
+                console.log(`❌ Не найдено изображение: ${imageName}.png - показываем заглушку`);
             };
             img.src = `${imageName}.png`; // Ищет dropcase1_1.png, dropcase2_5.png и т.д.
         }
@@ -1510,12 +1538,22 @@
                 
                 const iconEl = document.createElement('div');
                 iconEl.className = `inventory-item-icon ${item.rarity}`;
-                iconEl.style.background = getRarityColor(item.rarity);
-                iconEl.style.display = 'flex';
-                iconEl.style.alignItems = 'center';
-                iconEl.style.justifyContent = 'center';
+                iconEl.style.cssText = `
+                    width: 60px;
+                    height: 60px;
+                    margin: 0 auto 8px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 30px;
+                    background-size: cover;
+                    background-position: center;
+                    background-color: ${getRarityColor(item.rarity)};
+                    border: 3px solid ${getRarityColor(item.rarity)};
+                `;
                 
-                // Простая загрузка изображения дропа
+                // Загружаем изображение дропа для инвентаря
                 loadDropImage(iconEl, item.image);
                 
                 // Add click event to open item menu
@@ -1524,10 +1562,18 @@
                 });
                 
                 itemEl.appendChild(iconEl);
-                itemEl.innerHTML += `
-                    <div>${item.name}</div>
-                    <div style="color: #ffd700; font-size: 10px;">${item.value} ꙮ</div>
-                `;
+                
+                // Создаем отдельные элементы для названия и цены
+                const nameEl = document.createElement('div');
+                nameEl.textContent = item.name;
+                nameEl.style.cssText = 'font-size: 12px; text-align: center; margin-bottom: 4px; word-wrap: break-word; line-height: 1.2; max-width: 100px;';
+                itemEl.appendChild(nameEl);
+                
+                const valueEl = document.createElement('div');
+                valueEl.textContent = `${item.value} ꙮ`;
+                valueEl.style.cssText = 'color: #ffd700; font-size: 11px; text-align: center; font-weight: bold;';
+                itemEl.appendChild(valueEl);
+                
                 inventoryGrid.appendChild(itemEl);
             });
         }
@@ -2255,7 +2301,7 @@
                     const gameData = JSON.parse(savedData);
                     balance = gameData.balance || 1000;
                     inventory = gameData.inventory || [
-                        { name: 'Стартовый инструмент', image: 'keys/starter_tool?prompt=basic%20tool%20icon', rarity: 'common', value: 10 }
+                        { name: 'Стартовый инструмент', image: 'dropcase1_1', rarity: 'common', value: 10 }
                     ];
                     userNickname = gameData.nickname || 'Игрок';
                     winglistItems = gameData.winglistItems || [];
