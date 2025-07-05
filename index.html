@@ -102,8 +102,8 @@
             }
             
             .profile-section button {
-                padding: 4px 8px !important;
-                font-size: 10px !important;
+                padding: 8px 16px !important;
+                font-size: 12px !important;
             }
             
             #debtStatus {
@@ -292,7 +292,7 @@
                 margin-bottom: 15px;
                 padding: 0 10px;
                 margin-left: 0; /* Убираем сдвиг на мобильных */
-                margin-top: 0; /* Убираем лишний отступ, теперь WINGLIST не перекрывает */
+                margin-top: 10px; /* Опускаем промо-блок на 10px вниз */
             }
             
             .promo-frame {
@@ -1418,6 +1418,7 @@
         // 🏛️ СИСТЕМА ГОСДОЛГА
         let hasDebt = false; // Есть ли активный долг
         let debtCasesLeft = 0; // Сколько кейсов осталось до списания
+        let debtAmount = 500; // Сумма к возврату (по умолчанию 500)
         let isBlocked = false; // Заблокирован ли доступ к кейсам
         let hasBadCredit = false; // Плохой кредитный рейтинг (не вернул долг хотя бы раз)
 
@@ -1462,248 +1463,248 @@
 
         // Никаких ассетов - только простые файлы!
 
-        // УНИКАЛЬНАЯ ЭКОНОМИКА: каждый дроп имеет уникальную цену и название
-        // ПРАВИЛО: все дропы различаются по цене, нет повторений названий
+        // СБАЛАНСИРОВАННАЯ ЭКОНОМИКА: шанс окупиться ~50% для всех кейсов
+        // ПРАВИЛО: половина дропов ниже цены кейса, половина выше
         const items = {
-            1: [ // Кейс 120 ꙮ - дропы от 12 до 180 ꙮ
-                { name: 'Хуюнтик Камень', image: 'dropcase1_3', rarity: 'common', value: 12, weight: 35 },
-                { name: 'Хуюнтик Палка', image: 'dropcase1_2', rarity: 'common', value: 17, weight: 30 },
-                { name: 'Хуюнтик Верёвка', image: 'dropcase1_4', rarity: 'common', value: 23, weight: 25 },
-                { name: 'Хуюнтик Нож', image: 'dropcase1_1', rarity: 'common', value: 31, weight: 20 },
-                { name: 'Хуюнтик Лук', image: 'dropcase1_8', rarity: 'common', value: 42, weight: 15 },
-                { name: 'Хуюнтик Броня', image: 'dropcase1_6', rarity: 'rare', value: 58, weight: 12 },
-                { name: 'Хуюнтик Меч', image: 'dropcase1_7', rarity: 'rare', value: 76, weight: 10 },
-                { name: 'Хуюнтик Щит', image: 'dropcase1_5', rarity: 'rare', value: 98, weight: 8 },
-                { name: 'Хуюнтик Артефакт', image: 'dropcase1_10', rarity: 'rare', value: 125, weight: 5 },
-                { name: 'Хуюнтик Зелье', image: 'dropcase1_9', rarity: 'epic', value: 180, weight: 2 }
+            1: [ // Кейс 120 ꙮ - дропы от 50 до 200 ꙮ (50/50 шанс окупа)
+                { name: 'Хуюнтик Камень', image: 'dropcase1_3', rarity: 'common', value: 50, weight: 25 },
+                { name: 'Хуюнтик Палка', image: 'dropcase1_2', rarity: 'common', value: 70, weight: 25 },
+                { name: 'Хуюнтик Верёвка', image: 'dropcase1_4', rarity: 'common', value: 90, weight: 20 },
+                { name: 'Хуюнтик Нож', image: 'dropcase1_1', rarity: 'common', value: 110, weight: 20 },
+                { name: 'Хуюнтик Лук', image: 'dropcase1_8', rarity: 'common', value: 130, weight: 10 },
+                { name: 'Хуюнтик Броня', image: 'dropcase1_6', rarity: 'rare', value: 150, weight: 8 },
+                { name: 'Хуюнтик Меч', image: 'dropcase1_7', rarity: 'rare', value: 170, weight: 6 },
+                { name: 'Хуюнтик Щит', image: 'dropcase1_5', rarity: 'rare', value: 190, weight: 4 },
+                { name: 'Хуюнтик Артефакт', image: 'dropcase1_10', rarity: 'epic', value: 210, weight: 2 },
+                { name: 'Хуюнтик Зелье', image: 'dropcase1_9', rarity: 'epic', value: 240, weight: 1 }
             ],
-            2: [ // Кейс 200 ꙮ - дропы от 20 до 300 ꙮ
-                { name: 'Кизик Клинок', image: 'dropcase2_1', rarity: 'common', value: 20, weight: 35 },
-                { name: 'Кизик Щит', image: 'dropcase2_2', rarity: 'common', value: 28, weight: 30 },
-                { name: 'Кизик Зелье', image: 'dropcase2_3', rarity: 'common', value: 39, weight: 25 },
-                { name: 'Кизик Амулет', image: 'dropcase2_6', rarity: 'common', value: 52, weight: 20 },
-                { name: 'Кизик Перчатки', image: 'dropcase2_9', rarity: 'rare', value: 69, weight: 15 },
-                { name: 'Кизик Посох', image: 'dropcase2_7', rarity: 'rare', value: 89, weight: 12 },
-                { name: 'Кизик Кольцо', image: 'dropcase2_4', rarity: 'rare', value: 114, weight: 10 },
-                { name: 'Кизик Сапоги', image: 'dropcase2_10', rarity: 'rare', value: 143, weight: 8 },
-                { name: 'Кизик Монета', image: 'dropcase2_5', rarity: 'epic', value: 185, weight: 5 },
-                { name: 'Кизик Корона', image: 'dropcase2_8', rarity: 'epic', value: 250, weight: 2 }
+            2: [ // Кейс 200 ꙮ - дропы от 80 до 350 ꙮ (50/50 шанс окупа)
+                { name: 'Кизик Клинок', image: 'dropcase2_1', rarity: 'common', value: 80, weight: 25 },
+                { name: 'Кизик Щит', image: 'dropcase2_2', rarity: 'common', value: 120, weight: 25 },
+                { name: 'Кизик Зелье', image: 'dropcase2_3', rarity: 'common', value: 160, weight: 20 },
+                { name: 'Кизик Амулет', image: 'dropcase2_6', rarity: 'common', value: 180, weight: 20 },
+                { name: 'Кизик Перчатки', image: 'dropcase2_9', rarity: 'rare', value: 220, weight: 10 },
+                { name: 'Кизик Посох', image: 'dropcase2_7', rarity: 'rare', value: 250, weight: 8 },
+                { name: 'Кизик Кольцо', image: 'dropcase2_4', rarity: 'rare', value: 280, weight: 6 },
+                { name: 'Кизик Сапоги', image: 'dropcase2_10', rarity: 'rare', value: 310, weight: 4 },
+                { name: 'Кизик Монета', image: 'dropcase2_5', rarity: 'epic', value: 340, weight: 2 },
+                { name: 'Кизик Корона', image: 'dropcase2_8', rarity: 'epic', value: 380, weight: 1 }
             ],
-            3: [ // Кейс 150 ꙮ - дропы от 15 до 225 ꙮ
-                { name: 'Жало Яд', image: 'dropcase3_3', rarity: 'common', value: 15, weight: 35 },
-                { name: 'Жало Дротик', image: 'dropcase3_6', rarity: 'common', value: 24, weight: 30 },
-                { name: 'Жало Шип', image: 'dropcase3_8', rarity: 'common', value: 35, weight: 25 },
-                { name: 'Жало Стрела', image: 'dropcase3_7', rarity: 'common', value: 48, weight: 20 },
-                { name: 'Жало Кольчуга', image: 'dropcase3_2', rarity: 'rare', value: 64, weight: 15 },
-                { name: 'Жало Клинок', image: 'dropcase3_1', rarity: 'rare', value: 83, weight: 12 },
-                { name: 'Жало Мастера', image: 'dropcase3_10', rarity: 'rare', value: 106, weight: 10 },
-                { name: 'Жало Лук', image: 'dropcase3_4', rarity: 'rare', value: 132, weight: 8 },
-                { name: 'Жало Сапфир', image: 'dropcase3_5', rarity: 'epic', value: 162, weight: 5 },
-                { name: 'Жало Легендарное', image: 'dropcase3_9', rarity: 'epic', value: 196, weight: 2 }
+            3: [ // Кейс 150 ꙮ - дропы от 60 до 280 ꙮ (50/50 шанс окупа)
+                { name: 'Жало Яд', image: 'dropcase3_3', rarity: 'common', value: 60, weight: 25 },
+                { name: 'Жало Дротик', image: 'dropcase3_6', rarity: 'common', value: 100, weight: 25 },
+                { name: 'Жало Шип', image: 'dropcase3_8', rarity: 'common', value: 130, weight: 20 },
+                { name: 'Жало Стрела', image: 'dropcase3_7', rarity: 'common', value: 140, weight: 20 },
+                { name: 'Жало Кольчуга', image: 'dropcase3_2', rarity: 'rare', value: 170, weight: 10 },
+                { name: 'Жало Клинок', image: 'dropcase3_1', rarity: 'rare', value: 200, weight: 8 },
+                { name: 'Жало Мастера', image: 'dropcase3_10', rarity: 'rare', value: 230, weight: 6 },
+                { name: 'Жало Лук', image: 'dropcase3_4', rarity: 'rare', value: 250, weight: 4 },
+                { name: 'Жало Сапфир', image: 'dropcase3_5', rarity: 'epic', value: 270, weight: 2 },
+                { name: 'Жало Легендарное', image: 'dropcase3_9', rarity: 'epic', value: 300, weight: 1 }
             ],
-            4: [ // Кейс 300 ꙮ - дропы от 30 до 450 ꙮ
-                { name: 'Шер Эликсир', image: 'dropcase4_3', rarity: 'common', value: 30, weight: 35 },
-                { name: 'Шер Кинжал', image: 'dropcase4_6', rarity: 'common', value: 46, weight: 30 },
-                { name: 'Шер Секира', image: 'dropcase4_9', rarity: 'common', value: 65, weight: 25 },
-                { name: 'Шер Щит', image: 'dropcase4_2', rarity: 'common', value: 87, weight: 20 },
-                { name: 'Шер Меч', image: 'dropcase4_1', rarity: 'rare', value: 112, weight: 15 },
-                { name: 'Шер Булава', image: 'dropcase4_7', rarity: 'rare', value: 141, weight: 12 },
-                { name: 'Шер Алебарда', image: 'dropcase4_10', rarity: 'rare', value: 174, weight: 10 },
-                { name: 'Шер Лук', image: 'dropcase4_4', rarity: 'rare', value: 211, weight: 8 },
-                { name: 'Шер Рубин', image: 'dropcase4_5', rarity: 'epic', value: 253, weight: 5 },
-                { name: 'Шер Легендарный', image: 'dropcase4_8', rarity: 'epic', value: 300, weight: 2 }
+            4: [ // Кейс 300 ꙮ - дропы от 120 до 550 ꙮ (50/50 шанс окупа)
+                { name: 'Шер Эликсир', image: 'dropcase4_3', rarity: 'common', value: 120, weight: 25 },
+                { name: 'Шер Кинжал', image: 'dropcase4_6', rarity: 'common', value: 180, weight: 25 },
+                { name: 'Шер Секира', image: 'dropcase4_9', rarity: 'common', value: 240, weight: 20 },
+                { name: 'Шер Щит', image: 'dropcase4_2', rarity: 'common', value: 270, weight: 20 },
+                { name: 'Шер Меч', image: 'dropcase4_1', rarity: 'rare', value: 330, weight: 10 },
+                { name: 'Шер Булава', image: 'dropcase4_7', rarity: 'rare', value: 380, weight: 8 },
+                { name: 'Шер Алебарда', image: 'dropcase4_10', rarity: 'rare', value: 430, weight: 6 },
+                { name: 'Шер Лук', image: 'dropcase4_4', rarity: 'rare', value: 480, weight: 4 },
+                { name: 'Шер Рубин', image: 'dropcase4_5', rarity: 'epic', value: 520, weight: 2 },
+                { name: 'Шер Легендарный', image: 'dropcase4_8', rarity: 'epic', value: 580, weight: 1 }
             ],
-            5: [ // Кейс 130 ꙮ - дропы от 13 до 195 ꙮ
-                { name: 'Глист Эликсир', image: 'dropcase5_3', rarity: 'common', value: 13, weight: 35 },
-                { name: 'Глист Червь', image: 'dropcase5_6', rarity: 'common', value: 21, weight: 30 },
-                { name: 'Глист Личинка', image: 'dropcase5_7', rarity: 'common', value: 32, weight: 25 },
-                { name: 'Глист Кокон', image: 'dropcase5_8', rarity: 'common', value: 45, weight: 20 },
-                { name: 'Глист Мутант', image: 'dropcase5_10', rarity: 'rare', value: 61, weight: 15 },
-                { name: 'Глист Броня', image: 'dropcase5_2', rarity: 'rare', value: 79, weight: 12 },
-                { name: 'Глист Клинок', image: 'dropcase5_1', rarity: 'rare', value: 101, weight: 10 },
-                { name: 'Глист Лук', image: 'dropcase5_4', rarity: 'rare', value: 126, weight: 8 },
-                { name: 'Глист Королева', image: 'dropcase5_9', rarity: 'epic', value: 155, weight: 5 },
-                { name: 'Глист Алмаз', image: 'dropcase5_5', rarity: 'epic', value: 188, weight: 2 }
+            5: [ // Кейс 130 ꙮ - дропы от 55 до 250 ꙮ (50/50 шанс окупа)
+                { name: 'Глист Эликсир', image: 'dropcase5_3', rarity: 'common', value: 55, weight: 25 },
+                { name: 'Глист Червь', image: 'dropcase5_6', rarity: 'common', value: 80, weight: 25 },
+                { name: 'Глист Личинка', image: 'dropcase5_7', rarity: 'common', value: 105, weight: 20 },
+                { name: 'Глист Кокон', image: 'dropcase5_8', rarity: 'common', value: 120, weight: 20 },
+                { name: 'Глист Мутант', image: 'dropcase5_10', rarity: 'rare', value: 150, weight: 10 },
+                { name: 'Глист Броня', image: 'dropcase5_2', rarity: 'rare', value: 175, weight: 8 },
+                { name: 'Глист Клинок', image: 'dropcase5_1', rarity: 'rare', value: 200, weight: 6 },
+                { name: 'Глист Лук', image: 'dropcase5_4', rarity: 'rare', value: 220, weight: 4 },
+                { name: 'Глист Королева', image: 'dropcase5_9', rarity: 'epic', value: 240, weight: 2 },
+                { name: 'Глист Алмаз', image: 'dropcase5_5', rarity: 'epic', value: 270, weight: 1 }
             ],
-            6: [ // Кейс 100 ꙮ - дропы от 10 до 150 ꙮ
-                { name: 'Меофен Порошок', image: 'dropcase6_8', rarity: 'common', value: 10, weight: 35 },
-                { name: 'Меофен Таблетка', image: 'dropcase6_6', rarity: 'common', value: 16, weight: 30 },
-                { name: 'Меофен Зелье', image: 'dropcase6_3', rarity: 'common', value: 25, weight: 25 },
-                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'common', value: 36, weight: 20 },
-                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'rare', value: 49, weight: 15 },
-                { name: 'Меофен Щит', image: 'dropcase6_2', rarity: 'rare', value: 65, weight: 12 },
-                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 84, weight: 10 },
-                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'rare', value: 107, weight: 8 },
-                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 133, weight: 5 },
-                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'epic', value: 164, weight: 2 }
+            6: [ // Кейс 100 ꙮ - дропы от 40 до 190 ꙮ (50/50 шанс окупа)
+                { name: 'Меофен Порошок', image: 'dropcase6_8', rarity: 'common', value: 40, weight: 25 },
+                { name: 'Меофен Таблетка', image: 'dropcase6_6', rarity: 'common', value: 65, weight: 25 },
+                { name: 'Меофен Зелье', image: 'dropcase6_3', rarity: 'common', value: 85, weight: 20 },
+                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'common', value: 95, weight: 20 },
+                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'rare', value: 115, weight: 10 },
+                { name: 'Меофен Щит', image: 'dropcase6_2', rarity: 'rare', value: 135, weight: 8 },
+                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 155, weight: 6 },
+                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'rare', value: 170, weight: 4 },
+                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 185, weight: 2 },
+                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'epic', value: 205, weight: 1 }
             ],
-            7: [ // Кейс 250 ꙮ - дропы от 25 до 375 ꙮ
-                { name: 'ЧВК Стимулятор', image: 'dropcase7_3', rarity: 'common', value: 25, weight: 35 },
-                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 38, weight: 30 },
-                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 54, weight: 25 },
-                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'common', value: 73, weight: 20 },
-                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 95, weight: 15 },
-                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'rare', value: 121, weight: 12 },
-                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'rare', value: 151, weight: 10 },
-                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'rare', value: 186, weight: 8 },
-                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'epic', value: 227, weight: 5 },
-                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'epic', value: 274, weight: 2 }
+            7: [ // Кейс 250 ꙮ - дропы от 100 до 450 ꙮ (50/50 шанс окупа)
+                { name: 'ЧВК Стимулятор', image: 'dropcase7_3', rarity: 'common', value: 100, weight: 25 },
+                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 150, weight: 25 },
+                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 200, weight: 20 },
+                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'common', value: 230, weight: 20 },
+                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 280, weight: 10 },
+                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'rare', value: 320, weight: 8 },
+                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'rare', value: 360, weight: 6 },
+                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'rare', value: 400, weight: 4 },
+                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'epic', value: 430, weight: 2 },
+                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'epic', value: 480, weight: 1 }
             ],
-            8: [ // Кейс 180 ꙮ - дропы от 18 до 270 ꙮ
-                { name: 'Берег Раковина', image: 'dropcase8_6', rarity: 'common', value: 18, weight: 35 },
-                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 27, weight: 30 },
-                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 37, weight: 25 },
-                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'common', value: 49, weight: 20 },
-                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 63, weight: 15 },
-                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'rare', value: 80, weight: 12 },
-                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'rare', value: 99, weight: 10 },
-                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'rare', value: 121, weight: 8 },
-                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'epic', value: 147, weight: 5 },
-                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'epic', value: 177, weight: 2 }
+            8: [ // Кейс 180 ꙮ - дропы от 75 до 340 ꙮ (50/50 шанс окупа)
+                { name: 'Берег Раковина', image: 'dropcase8_6', rarity: 'common', value: 75, weight: 25 },
+                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 115, weight: 25 },
+                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 155, weight: 20 },
+                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'common', value: 170, weight: 20 },
+                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 210, weight: 10 },
+                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'rare', value: 250, weight: 8 },
+                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'rare', value: 280, weight: 6 },
+                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'rare', value: 310, weight: 4 },
+                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'epic', value: 330, weight: 2 },
+                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'epic', value: 360, weight: 1 }
             ],
-            9: [ // Кейс 220 ꙮ - дропы от 22 до 330 ꙮ
-                { name: 'Молот Буря', image: 'dropcase9_3', rarity: 'common', value: 22, weight: 35 },
-                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 33, weight: 30 },
-                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 47, weight: 25 },
-                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'common', value: 63, weight: 20 },
-                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 82, weight: 15 },
-                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'rare', value: 104, weight: 12 },
-                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'rare', value: 130, weight: 10 },
-                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'rare', value: 160, weight: 8 },
-                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'epic', value: 195, weight: 5 },
-                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'epic', value: 236, weight: 2 }
+            9: [ // Кейс 220 ꙮ - дропы от 90 до 410 ꙮ (50/50 шанс окупа)
+                { name: 'Молот Буря', image: 'dropcase9_3', rarity: 'common', value: 90, weight: 25 },
+                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 135, weight: 25 },
+                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 180, weight: 20 },
+                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'common', value: 200, weight: 20 },
+                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 250, weight: 10 },
+                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'rare', value: 290, weight: 8 },
+                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'rare', value: 330, weight: 6 },
+                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'rare', value: 370, weight: 4 },
+                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'epic', value: 390, weight: 2 },
+                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'epic', value: 440, weight: 1 }
             ],
-            10: [ // Кейс 160 ꙮ - дропы от 16 до 240 ꙮ
-                { name: 'Вихрь Эликсир', image: 'dropcase10_3', rarity: 'common', value: 16, weight: 35 },
-                { name: 'Вихрь Ветер', image: 'dropcase10_6', rarity: 'common', value: 26, weight: 30 },
-                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 38, weight: 25 },
-                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'common', value: 53, weight: 20 },
-                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 71, weight: 15 },
-                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'rare', value: 92, weight: 12 },
-                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'rare', value: 117, weight: 10 },
-                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'rare', value: 146, weight: 8 },
-                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'epic', value: 179, weight: 5 },
-                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'epic', value: 218, weight: 2 }
+            10: [ // Кейс 160 ꙮ - дропы от 65 до 300 ꙮ (50/50 шанс окупа)
+                { name: 'Вихрь Эликсир', image: 'dropcase10_3', rarity: 'common', value: 65, weight: 25 },
+                { name: 'Вихрь Ветер', image: 'dropcase10_6', rarity: 'common', value: 100, weight: 25 },
+                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 135, weight: 20 },
+                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'common', value: 150, weight: 20 },
+                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 185, weight: 10 },
+                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'rare', value: 220, weight: 8 },
+                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'rare', value: 250, weight: 6 },
+                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'rare', value: 275, weight: 4 },
+                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'epic', value: 290, weight: 2 },
+                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'epic', value: 320, weight: 1 }
             ],
-            11: [ // Кейс 350 ꙮ - дропы от 35 до 525 ꙮ
-                { name: 'Призрак Зелье', image: 'dropcase11_3', rarity: 'common', value: 35, weight: 35 },
-                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 51, weight: 30 },
-                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 70, weight: 25 },
-                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'common', value: 92, weight: 20 },
-                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 118, weight: 15 },
-                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'rare', value: 148, weight: 12 },
-                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'rare', value: 183, weight: 10 },
-                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'rare', value: 223, weight: 8 },
-                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'epic', value: 269, weight: 5 },
-                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'epic', value: 321, weight: 2 }
+            11: [ // Кейс 350 ꙮ - дропы от 140 до 650 ꙮ (50/50 шанс окупа)
+                { name: 'Призрак Зелье', image: 'dropcase11_3', rarity: 'common', value: 140, weight: 25 },
+                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 210, weight: 25 },
+                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 280, weight: 20 },
+                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'common', value: 320, weight: 20 },
+                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 390, weight: 10 },
+                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'rare', value: 450, weight: 8 },
+                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'rare', value: 510, weight: 6 },
+                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'rare', value: 570, weight: 4 },
+                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'epic', value: 610, weight: 2 },
+                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'epic', value: 680, weight: 1 }
             ],
-            12: [ // Кейс 290 ꙮ - дропы от 29 до 435 ꙮ
-                { name: 'Лёд Зелье', image: 'dropcase12_3', rarity: 'common', value: 29, weight: 35 },
-                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 43, weight: 30 },
-                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 59, weight: 25 },
-                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'common', value: 78, weight: 20 },
-                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 100, weight: 15 },
-                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'rare', value: 125, weight: 12 },
-                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'rare', value: 154, weight: 10 },
-                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'rare', value: 187, weight: 8 },
-                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'epic', value: 225, weight: 5 },
-                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'epic', value: 268, weight: 2 }
+            12: [ // Кейс 290 ꙮ - дропы от 115 до 540 ꙮ (50/50 шанс окупа)
+                { name: 'Лёд Зелье', image: 'dropcase12_3', rarity: 'common', value: 115, weight: 25 },
+                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 175, weight: 25 },
+                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 235, weight: 20 },
+                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'common', value: 270, weight: 20 },
+                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 330, weight: 10 },
+                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'rare', value: 380, weight: 8 },
+                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'rare', value: 430, weight: 6 },
+                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'rare', value: 480, weight: 4 },
+                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'epic', value: 510, weight: 2 },
+                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'epic', value: 570, weight: 1 }
             ],
-            13: [ // Кейс 400 ꙮ - дропы от 40 до 600 ꙮ
-                { name: 'Огонь Эликсир', image: 'dropcase13_3', rarity: 'common', value: 40, weight: 35 },
-                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 57, weight: 30 },
-                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 77, weight: 25 },
-                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'common', value: 100, weight: 20 },
-                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 127, weight: 15 },
-                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'rare', value: 158, weight: 12 },
-                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'rare', value: 194, weight: 10 },
-                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'rare', value: 235, weight: 8 },
-                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'epic', value: 282, weight: 5 },
-                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'epic', value: 335, weight: 2 }
+            13: [ // Кейс 400 ꙮ - дропы от 160 до 750 ꙮ (50/50 шанс окупа)
+                { name: 'Огонь Эликсир', image: 'dropcase13_3', rarity: 'common', value: 160, weight: 25 },
+                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 240, weight: 25 },
+                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 320, weight: 20 },
+                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'common', value: 360, weight: 20 },
+                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 450, weight: 10 },
+                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'rare', value: 520, weight: 8 },
+                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'rare', value: 590, weight: 6 },
+                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'rare', value: 660, weight: 4 },
+                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'epic', value: 710, weight: 2 },
+                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'epic', value: 780, weight: 1 }
             ],
-            14: [ // Кейс 320 ꙮ - дропы от 32 до 480 ꙮ
-                { name: 'Тень Зелье', image: 'dropcase14_3', rarity: 'common', value: 32, weight: 35 },
-                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 47, weight: 30 },
-                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 65, weight: 25 },
-                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'common', value: 86, weight: 20 },
-                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 110, weight: 15 },
-                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'rare', value: 138, weight: 12 },
-                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'rare', value: 170, weight: 10 },
-                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'rare', value: 207, weight: 8 },
-                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'epic', value: 249, weight: 5 },
-                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'epic', value: 297, weight: 2 }
+            14: [ // Кейс 320 ꙮ - дропы от 130 до 600 ꙮ (50/50 шанс окупа)
+                { name: 'Тень Зелье', image: 'dropcase14_3', rarity: 'common', value: 130, weight: 25 },
+                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 195, weight: 25 },
+                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 260, weight: 20 },
+                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'common', value: 300, weight: 20 },
+                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 370, weight: 10 },
+                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'rare', value: 430, weight: 8 },
+                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'rare', value: 490, weight: 6 },
+                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'rare', value: 550, weight: 4 },
+                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'epic', value: 580, weight: 2 },
+                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'epic', value: 640, weight: 1 }
             ],
-            15: [ // Кейс 270 ꙮ - дропы от 27 до 405 ꙮ
-                { name: 'Свет Вода', image: 'dropcase15_3', rarity: 'common', value: 27, weight: 35 },
-                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 41, weight: 30 },
-                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 57, weight: 25 },
-                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'common', value: 76, weight: 20 },
-                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 98, weight: 15 },
-                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'rare', value: 123, weight: 12 },
-                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'rare', value: 152, weight: 10 },
-                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'rare', value: 185, weight: 8 },
-                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'epic', value: 222, weight: 5 },
-                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'epic', value: 264, weight: 2 }
+            15: [ // Кейс 270 ꙮ - дропы от 110 до 510 ꙮ (50/50 шанс окупа)
+                { name: 'Свет Вода', image: 'dropcase15_3', rarity: 'common', value: 110, weight: 25 },
+                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 165, weight: 25 },
+                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 220, weight: 20 },
+                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'common', value: 250, weight: 20 },
+                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 310, weight: 10 },
+                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'rare', value: 360, weight: 8 },
+                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'rare', value: 410, weight: 6 },
+                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'rare', value: 460, weight: 4 },
+                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'epic', value: 490, weight: 2 },
+                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'epic', value: 540, weight: 1 }
             ],
-            16: [ // Кейс 500 ꙮ - дропы от 50 до 750 ꙮ
-                { name: 'Хаос Зелье', image: 'dropcase16_3', rarity: 'common', value: 50, weight: 35 },
-                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 72, weight: 30 },
-                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 97, weight: 25 },
-                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'common', value: 125, weight: 20 },
-                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 157, weight: 15 },
-                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'rare', value: 193, weight: 12 },
-                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'rare', value: 234, weight: 10 },
-                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'rare', value: 280, weight: 8 },
-                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'epic', value: 332, weight: 5 },
-                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'epic', value: 390, weight: 2 }
+            16: [ // Кейс 500 ꙮ - дропы от 200 до 950 ꙮ (50/50 шанс окупа)
+                { name: 'Хаос Зелье', image: 'dropcase16_3', rarity: 'common', value: 200, weight: 25 },
+                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 300, weight: 25 },
+                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 400, weight: 20 },
+                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'common', value: 450, weight: 20 },
+                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 560, weight: 10 },
+                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'rare', value: 650, weight: 8 },
+                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'rare', value: 740, weight: 6 },
+                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'rare', value: 830, weight: 4 },
+                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'epic', value: 890, weight: 2 },
+                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'epic', value: 980, weight: 1 }
             ],
-            17: [ // Кейс 450 ꙮ - дропы от 45 до 675 ꙮ
-                { name: 'Порядок Эликсир', image: 'dropcase17_3', rarity: 'common', value: 45, weight: 35 },
-                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 66, weight: 30 },
-                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 90, weight: 25 },
-                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'common', value: 117, weight: 20 },
-                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 148, weight: 15 },
-                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'rare', value: 182, weight: 12 },
-                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'rare', value: 220, weight: 10 },
-                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'rare', value: 262, weight: 8 },
-                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'epic', value: 309, weight: 5 },
-                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'epic', value: 361, weight: 2 }
+            17: [ // Кейс 450 ꙮ - дропы от 180 до 850 ꙮ (50/50 шанс окупа)
+                { name: 'Порядок Эликсир', image: 'dropcase17_3', rarity: 'common', value: 180, weight: 25 },
+                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 270, weight: 25 },
+                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 360, weight: 20 },
+                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'common', value: 410, weight: 20 },
+                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 510, weight: 10 },
+                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'rare', value: 590, weight: 8 },
+                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'rare', value: 670, weight: 6 },
+                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'rare', value: 750, weight: 4 },
+                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'epic', value: 810, weight: 2 },
+                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'epic', value: 890, weight: 1 }
             ],
-            18: [ // Кейс 380 ꙮ - дропы от 38 до 570 ꙮ
-                { name: 'Время Зелье', image: 'dropcase18_3', rarity: 'common', value: 38, weight: 35 },
-                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 56, weight: 30 },
-                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 77, weight: 25 },
-                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'common', value: 101, weight: 20 },
-                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 128, weight: 15 },
-                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'rare', value: 159, weight: 12 },
-                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'rare', value: 194, weight: 10 },
-                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'rare', value: 233, weight: 8 },
-                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'epic', value: 277, weight: 5 },
-                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'epic', value: 326, weight: 2 }
+            18: [ // Кейс 380 ꙮ - дропы от 150 до 720 ꙮ (50/50 шанс окупа)
+                { name: 'Время Зелье', image: 'dropcase18_3', rarity: 'common', value: 150, weight: 25 },
+                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 230, weight: 25 },
+                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 310, weight: 20 },
+                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'common', value: 350, weight: 20 },
+                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 440, weight: 10 },
+                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'rare', value: 510, weight: 8 },
+                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'rare', value: 580, weight: 6 },
+                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'rare', value: 650, weight: 4 },
+                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'epic', value: 700, weight: 2 },
+                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'epic', value: 770, weight: 1 }
             ],
-            19: [ // Кейс 600 ꙮ - дропы от 60 до 900 ꙮ
-                { name: 'Космос Нектар', image: 'dropcase19_3', rarity: 'common', value: 60, weight: 35 },
-                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 85, weight: 30 },
-                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 113, weight: 25 },
-                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'common', value: 144, weight: 20 },
-                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 179, weight: 15 },
-                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'rare', value: 218, weight: 12 },
-                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'rare', value: 262, weight: 10 },
-                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'rare', value: 311, weight: 8 },
-                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'epic', value: 366, weight: 5 },
-                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'epic', value: 427, weight: 2 }
+            19: [ // Кейс 600 ꙮ - дропы от 240 до 1150 ꙮ (50/50 шанс окупа)
+                { name: 'Космос Нектар', image: 'dropcase19_3', rarity: 'common', value: 240, weight: 25 },
+                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 360, weight: 25 },
+                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 480, weight: 20 },
+                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'common', value: 540, weight: 20 },
+                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 680, weight: 10 },
+                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'rare', value: 790, weight: 8 },
+                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'rare', value: 900, weight: 6 },
+                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'rare', value: 1010, weight: 4 },
+                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'epic', value: 1080, weight: 2 },
+                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'epic', value: 1190, weight: 1 }
             ],
-            20: [ // Кейс 750 ꙮ - дропы от 75 до 1125 ꙮ
-                { name: 'Вечность Эликсир', image: 'dropcase20_3', rarity: 'common', value: 75, weight: 35 },
-                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 108, weight: 30 },
-                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 146, weight: 25 },
-                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'common', value: 189, weight: 20 },
-                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 237, weight: 15 },
-                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'rare', value: 291, weight: 12 },
-                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'rare', value: 351, weight: 10 },
-                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'rare', value: 418, weight: 8 },
-                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'epic', value: 492, weight: 5 },
-                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 574, weight: 2 }
+            20: [ // Кейс 750 ꙮ - дропы от 300 до 1400 ꙮ (50/50 шанс окупа)
+                { name: 'Вечность Эликсир', image: 'dropcase20_3', rarity: 'common', value: 300, weight: 25 },
+                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 450, weight: 25 },
+                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 600, weight: 20 },
+                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'common', value: 675, weight: 20 },
+                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 850, weight: 10 },
+                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'rare', value: 990, weight: 8 },
+                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'rare', value: 1130, weight: 6 },
+                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'rare', value: 1270, weight: 4 },
+                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'epic', value: 1350, weight: 2 },
+                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 1480, weight: 1 }
             ]
         };
 
@@ -2785,6 +2786,7 @@
             isBlocked = false;
             hasDebt = false;
             debtCasesLeft = 0;
+            debtAmount = 500;
             
             // Обновляем все интерфейсы
             updateDebtStatus();
@@ -2817,7 +2819,7 @@
             console.log('💰 Теперь можно снова брать госдолг и использовать все промокоды!');
         }
         
-        // 💡 ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ КНОПКИ
+        // 💡 ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ КНОПОК
         window.closeBonusModal = function() {
             const modal = document.getElementById('bonus-modal');
             if (modal) {
@@ -2825,6 +2827,13 @@
                 bonusHintShown = true; // Помечаем что показали
                 saveGameData(); // Сохраняем флаг
                 console.log('💡 Менюшка BONUS закрыта, больше не показываем');
+            }
+        };
+        
+        window.closeDebtSelectionMenu = function() {
+            const modal = document.getElementById('debt-selection-modal');
+            if (modal) {
+                document.body.removeChild(modal);
             }
         };
 
@@ -3074,22 +3083,294 @@
                 return;
             }
             
+            // Показываем меню выбора суммы долга
+            showDebtSelectionMenu();
+        }
+        
+        function showDebtSelectionMenu() {
+            const selectionModal = document.createElement('div');
+            selectionModal.id = 'debt-selection-modal';
+            selectionModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10005;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
+            
+            // Определяем мобильную версию
+            const isMobile = window.innerWidth <= 768;
+            
+            selectionModal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #2c3e50, #34495e);
+                    border: 3px solid #e74c3c;
+                    border-radius: ${isMobile ? '15px' : '20px'};
+                    padding: ${isMobile ? '25px 20px' : '30px'};
+                    text-align: center;
+                    max-width: ${isMobile ? '340px' : '500px'};
+                    width: ${isMobile ? '90vw' : 'auto'};
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+                ">
+                    <h2 style="color: #e74c3c; font-size: ${isMobile ? '20px' : '24px'}; margin-bottom: ${isMobile ? '15px' : '20px'};">💰 ВЫБОР СУММЫ ГОСДОЛГА 💰</h2>
+                    <p style="color: #fff; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: ${isMobile ? '20px' : '25px'}; line-height: 1.4;">
+                        Выберите сумму которую хотите взять в долг у СПО.<br>
+                        <strong style="color: #ff6b6b;">⚠️ К возврату: сумма × 2!</strong>
+                    </p>
+                    <div style="
+                        display: grid;
+                        grid-template-columns: ${isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'};
+                        gap: ${isMobile ? '8px' : '12px'};
+                        margin-bottom: ${isMobile ? '20px' : '25px'};
+                        max-width: ${isMobile ? '320px' : '500px'};
+                        margin-left: auto;
+                        margin-right: auto;
+                    ">
+                        <button class="debt-amount-btn" data-amount="500" style="
+                            background: linear-gradient(145deg, #3498db, #2980b9);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '10px 6px' : '12px 8px'};
+                            border-radius: ${isMobile ? '8px' : '10px'};
+                            font-size: ${isMobile ? '11px' : '13px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            text-align: center;
+                            line-height: 1.2;
+                        ">
+                            💵 500 ꙮ<br>
+                            <span style="font-size: ${isMobile ? '9px' : '11px'}; opacity: 0.8;">→ 1000 ꙮ</span>
+                        </button>
+                        <button class="debt-amount-btn" data-amount="1000" style="
+                            background: linear-gradient(145deg, #f39c12, #d68910);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '10px 6px' : '12px 8px'};
+                            border-radius: ${isMobile ? '8px' : '10px'};
+                            font-size: ${isMobile ? '11px' : '13px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            text-align: center;
+                            line-height: 1.2;
+                        ">
+                            💰 1000 ꙮ<br>
+                            <span style="font-size: ${isMobile ? '9px' : '11px'}; opacity: 0.8;">→ 2000 ꙮ</span>
+                        </button>
+                        <button class="debt-amount-btn" data-amount="5000" style="
+                            background: linear-gradient(145deg, #9b59b6, #8e44ad);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '10px 6px' : '12px 8px'};
+                            border-radius: ${isMobile ? '8px' : '10px'};
+                            font-size: ${isMobile ? '11px' : '13px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            text-align: center;
+                            line-height: 1.2;
+                        ">
+                            💎 5000 ꙮ<br>
+                            <span style="font-size: ${isMobile ? '9px' : '11px'}; opacity: 0.8;">→ 10000 ꙮ</span>
+                        </button>
+                        <button class="debt-amount-btn" data-amount="10000" style="
+                            background: linear-gradient(145deg, #e74c3c, #c0392b);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '10px 6px' : '12px 8px'};
+                            border-radius: ${isMobile ? '8px' : '10px'};
+                            font-size: ${isMobile ? '11px' : '13px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            text-align: center;
+                            line-height: 1.2;
+                        ">
+                            🔥 10000 ꙮ<br>
+                            <span style="font-size: ${isMobile ? '9px' : '11px'}; opacity: 0.8;">→ 20000 ꙮ</span>
+                        </button>
+                        <button class="debt-amount-btn" data-amount="20000" style="
+                            background: linear-gradient(145deg, #2c3e50, #34495e);
+                            color: #ffd700;
+                            border: 2px solid #ffd700;
+                            padding: ${isMobile ? '10px 6px' : '12px 8px'};
+                            border-radius: ${isMobile ? '8px' : '10px'};
+                            font-size: ${isMobile ? '11px' : '13px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            text-align: center;
+                            line-height: 1.2;
+                            ${isMobile ? 'grid-column: 1 / -1;' : 'grid-column: 2 / 4;'}
+                            position: relative;
+                            overflow: hidden;
+                        ">
+                            ⚡ 20000 ꙮ ⚡<br>
+                            <span style="font-size: ${isMobile ? '9px' : '11px'}; opacity: 0.9; color: #ff6b6b;">→ 40000 ꙮ</span>
+                            <div style="
+                                position: absolute;
+                                top: -2px;
+                                right: -2px;
+                                background: linear-gradient(45deg, #ff6b6b, #ffd700);
+                                color: #000;
+                                font-size: ${isMobile ? '8px' : '10px'};
+                                font-weight: bold;
+                                padding: 2px 6px;
+                                border-radius: 0 8px 0 8px;
+                                text-shadow: none;
+                            ">МАКС</div>
+                        </button>
+                    </div>
+                    <div id="debt-selection-info" style="
+                        background: rgba(255,255,255,0.1);
+                        border-radius: ${isMobile ? '8px' : '10px'};
+                        padding: ${isMobile ? '12px' : '15px'};
+                        margin-bottom: ${isMobile ? '15px' : '20px'};
+                        display: none;
+                    ">
+                        <p id="debt-selection-text" style="color: #ffd700; font-size: ${isMobile ? '13px' : '15px'}; margin: 0; font-weight: bold;"></p>
+                    </div>
+                    <div style="
+                        display: flex;
+                        gap: ${isMobile ? '10px' : '15px'};
+                        justify-content: center;
+                        ${isMobile ? 'flex-direction: column;' : ''}
+                    ">
+                        <button id="confirm-debt-btn" style="
+                            background: linear-gradient(145deg, #e74c3c, #c0392b);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '12px 25px' : '15px 30px'};
+                            border-radius: ${isMobile ? '10px' : '12px'};
+                            font-size: ${isMobile ? '14px' : '16px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            opacity: 0.5;
+                            ${isMobile ? 'width: 100%;' : ''}
+                        " disabled>
+                            💸 Взять в долг
+                        </button>
+                        <button onclick="closeDebtSelectionMenu()" style="
+                            background: linear-gradient(145deg, #7f8c8d, #95a5a6);
+                            color: white;
+                            border: none;
+                            padding: ${isMobile ? '12px 25px' : '15px 30px'};
+                            border-radius: ${isMobile ? '10px' : '12px'};
+                            font-size: ${isMobile ? '14px' : '16px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            ${isMobile ? 'width: 100%;' : ''}
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            ❌ Отмена
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(selectionModal);
+            
+            // Добавляем обработчики для кнопок выбора суммы
+            let selectedAmount = 0;
+            const amountButtons = selectionModal.querySelectorAll('.debt-amount-btn');
+            const confirmButton = selectionModal.querySelector('#confirm-debt-btn');
+            const infoDiv = selectionModal.querySelector('#debt-selection-info');
+            const infoText = selectionModal.querySelector('#debt-selection-text');
+            
+            amountButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Убираем выделение с других кнопок
+                    amountButtons.forEach(btn => {
+                        btn.style.transform = 'scale(1)';
+                        btn.style.boxShadow = 'none';
+                        btn.style.border = 'none';
+                    });
+                    
+                    // Выделяем текущую кнопку
+                    this.style.transform = 'scale(1.05)';
+                    this.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.6)';
+                    this.style.border = '2px solid #ffd700';
+                    
+                    selectedAmount = parseInt(this.dataset.amount);
+                    const returnAmount = selectedAmount * 2;
+                    
+                    // Показываем информацию
+                    infoDiv.style.display = 'block';
+                    infoText.innerHTML = `
+                        📋 Взять: <strong>${selectedAmount} ꙮ</strong><br>
+                        💰 К возврату: <strong>${returnAmount} ꙮ</strong> через 3 кейса
+                    `;
+                    
+                    // Активируем кнопку подтверждения
+                    confirmButton.disabled = false;
+                    confirmButton.style.opacity = '1';
+                    confirmButton.style.cursor = 'pointer';
+                    
+                    console.log(`💰 Выбрана сумма долга: ${selectedAmount} ꙮ (к возврату: ${returnAmount} ꙮ)`);
+                });
+                
+                // Эффекты наведения
+                button.addEventListener('mouseenter', function() {
+                    if (parseInt(this.dataset.amount) !== selectedAmount) {
+                        this.style.transform = 'scale(1.02)';
+                    }
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    if (parseInt(this.dataset.amount) !== selectedAmount) {
+                        this.style.transform = 'scale(1)';
+                    }
+                });
+            });
+            
+            // Обработчик кнопки подтверждения
+            confirmButton.addEventListener('click', function() {
+                if (selectedAmount > 0) {
+                    confirmDebtTaking(selectedAmount);
+                    closeDebtSelectionMenu();
+                }
+            });
+            
+            console.log('💰 Показано меню выбора суммы госдолга');
+        }
+        
+        function closeDebtSelectionMenu() {
+            const modal = document.getElementById('debt-selection-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        function confirmDebtTaking(amount) {
+            const returnAmount = amount * 2;
+            
             // Выдаем госдолг
-            balance += 300;
+            balance += amount;
             hasDebt = true;
             debtCasesLeft = 3;
+            debtAmount = returnAmount; // Сохраняем сумму к возврату
             
             updateBalance();
             updateDebtStatus();
             saveGameData();
             
-            // Показываем предупреждение
-            showDebtWarning();
+            // Показываем предупреждение с новой информацией
+            showDebtWarning(amount, returnAmount);
             
-            console.log('💰 Госдолг взят: +300 ꙮ, долг будет списан через 3 кейса');
+            console.log(`💰 Госдолг взят: +${amount} ꙮ, к возврату: ${returnAmount} ꙮ через 3 кейса`);
         }
         
-        function showDebtWarning() {
+        function showDebtWarning(amount = 300, returnAmount = 500) {
             const warning = document.createElement('div');
             warning.style.cssText = `
                 position: fixed;
@@ -3119,8 +3400,8 @@
                     </p>
                     <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
                         <p style="color: #ffd700; font-size: 12px; margin: 0; line-height: 1.3;">
-                            💰 Получено: +300 ꙮ<br>
-                            📅 К возврату: 500 ꙮ через 3 кейса
+                            💰 Получено: +${amount} ꙮ<br>
+                            📅 К возврату: ${returnAmount} ꙮ через 3 кейса
                         </p>
                     </div>
                     <button onclick="this.parentElement.remove()" style="
@@ -3138,8 +3419,8 @@
                     </p>
                     <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                         <p style="color: #ffd700; font-size: 14px; margin: 0;">
-                            💰 Получено: +300 ꙮ<br>
-                            📅 К возврату: 500 ꙮ через 3 кейса
+                            💰 Получено: +${amount} ꙮ<br>
+                            📅 К возврату: ${returnAmount} ꙮ через 3 кейса
                         </p>
                     </div>
                     <button onclick="this.parentElement.remove()" style="
@@ -3171,7 +3452,7 @@
             } else if (hasDebt && debtCasesLeft > 0) {
                 debtButton.style.display = 'none';
                 debtStatus.style.display = 'block';
-                debtStatus.innerHTML = `⚠️ Долг: ${debtCasesLeft} кейсов до списания 500 ꙮ`;
+                debtStatus.innerHTML = `⚠️ Долг: ${debtCasesLeft} кейсов до списания ${debtAmount} ꙮ`;
                 debtStatus.style.color = '#ff6b6b';
             } else if (isBlocked) {
                 debtButton.style.display = 'none';
@@ -3200,8 +3481,6 @@
         }
         
         function processDebtPayment() {
-            const debtAmount = 500;
-            
             if (balance >= debtAmount) {
                 // Успешно списываем долг
                 balance -= debtAmount;
@@ -3919,6 +4198,7 @@
                 usedPromocodes: usedPromocodes,
                 hasDebt: hasDebt,
                 debtCasesLeft: debtCasesLeft,
+                debtAmount: debtAmount,
                 isBlocked: isBlocked,
                 hasBadCredit: hasBadCredit,
                 bonusHintShown: bonusHintShown, // Сохраняем флаг показа подсказки
@@ -3942,6 +4222,7 @@
                     usedPromocodes = gameData.usedPromocodes || [];
                     hasDebt = gameData.hasDebt || false;
                     debtCasesLeft = gameData.debtCasesLeft || 0;
+                    debtAmount = gameData.debtAmount || 500;
                     isBlocked = gameData.isBlocked || false;
                     hasBadCredit = gameData.hasBadCredit || false;
                     bonusHintShown = gameData.bonusHintShown || false; // Загружаем флаг показа подсказки
@@ -4386,7 +4667,7 @@
                 avatarImg.onerror = () => {
                     // Оставляем дефолтный аватар
                     avatarEl.style.backgroundImage = 'none';
-                    avatarEl.textContent = '🐵';
+                    avatarEl.textContent = '👤';
                     console.log('📷 Используется дефолтный аватар');
                 };
                 
