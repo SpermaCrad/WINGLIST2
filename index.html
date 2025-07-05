@@ -101,6 +101,15 @@
                 font-size: 18px !important;
             }
             
+            .profile-section button {
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+            }
+            
+            #debtStatus {
+                font-size: 9px !important;
+            }
+            
             .header {
                 margin-bottom: 15px !important;
                 margin-top: -20px !important; /* Поднимаем профиль выше */
@@ -1088,6 +1097,17 @@
             margin-bottom: 20px;
             color: #ffd700;
         }
+        
+        @keyframes bannerPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: 0 8px 30px rgba(231, 76, 60, 0.7);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1107,7 +1127,31 @@
             <div class="profile-section">
                 <div class="profile-avatar" id="profileAvatar" onclick="handleAvatarClick()">👤</div>
                 <input type="file" class="avatar-upload-input" id="avatarUploadInput" accept="image/*" onchange="handleAvatarUpload(event)">
-                <div class="currency">Баланс: <span id="balance" onclick="handleBalanceClick(event)" title="Тройной клик для редактирования">1000</span></div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <div class="currency">Баланс: <span id="balance" onclick="handleBalanceClick(event)" title="Тройной клик для редактирования">1000</span></div>
+                    <button id="debtButton" onclick="takeDebt()" style="
+                        background: linear-gradient(145deg, #e74c3c, #c0392b);
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                        white-space: nowrap;
+                    " onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+                        💰 Взять госдолг
+                    </button>
+                    <div id="debtStatus" style="
+                        font-size: 11px;
+                        color: #ff6b6b;
+                        text-align: center;
+                        display: none;
+                        line-height: 1.2;
+                    "></div>
+                </div>
             </div>
         </header>
 
@@ -1122,6 +1166,39 @@
                 </div>
                 <div class="countdown-timer" id="countdownTimer">03:25:00</div>
             </div>
+        </div>
+
+        <!-- 🚫 БАННЕР БЛОКИРОВКИ КЕЙСОВ -->
+        <div id="blockBanner" style="
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: center;
+            display: none;
+            animation: bannerPulse 2s ease-in-out infinite;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        ">
+            <h2 style="color: #fff; font-size: 24px; margin-bottom: 15px;">🚨 БЛОКИРОВКА АКТИВНА 🚨</h2>
+            <p id="blockMessage" style="color: #fff; font-size: 18px; margin-bottom: 20px; line-height: 1.4;"></p>
+            <button id="repentButton" onclick="repent()" style="
+                background: linear-gradient(145deg, #27ae60, #229954);
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                margin: 5px;
+                transition: all 0.3s ease;
+                display: none;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🙏 ПОКАЯТЬСЯ
+            </button>
+
         </div>
 
         <div class="cases-title">СЕРИЙНЫЕ КЕЙСЫ</div>
@@ -1337,6 +1414,12 @@
         // Защита от мискликов
         let rouletteProtection = false; // Флаг защиты рулетки
         let caseCooldowns = {}; // Кулдауны для кейсов
+        
+        // 🏛️ СИСТЕМА ГОСДОЛГА
+        let hasDebt = false; // Есть ли активный долг
+        let debtCasesLeft = 0; // Сколько кейсов осталось до списания
+        let isBlocked = false; // Заблокирован ли доступ к кейсам
+        let hasBadCredit = false; // Плохой кредитный рейтинг (не вернул долг хотя бы раз)
 
         // Загрузка ТВОИХ изображений дропов
         function loadDropImage(imageElement, imageName) {
@@ -1379,248 +1462,248 @@
 
         // Никаких ассетов - только простые файлы!
 
-        // ИСПРАВЛЕННАЯ ЭКОНОМИКА: каждый кейс даёт дропы в рамках своей ценовой категории
-        // ПРАВИЛО: максимальный дроп не может быть дороже кейса в 2+ раза, минимальный - меньше 10% от цены кейса
+        // УНИКАЛЬНАЯ ЭКОНОМИКА: каждый дроп имеет уникальную цену и название
+        // ПРАВИЛО: все дропы различаются по цене, нет повторений названий
         const items = {
             1: [ // Кейс 120 ꙮ - дропы от 12 до 180 ꙮ
                 { name: 'Хуюнтик Камень', image: 'dropcase1_3', rarity: 'common', value: 12, weight: 35 },
-                { name: 'Хуюнтик Палка', image: 'dropcase1_2', rarity: 'common', value: 18, weight: 30 },
-                { name: 'Хуюнтик Верёвка', image: 'dropcase1_4', rarity: 'common', value: 25, weight: 25 },
-                { name: 'Хуюнтик Нож', image: 'dropcase1_1', rarity: 'common', value: 35, weight: 20 },
-                { name: 'Хуюнтик Лук', image: 'dropcase1_8', rarity: 'common', value: 45, weight: 15 },
-                { name: 'Хуюнтик Броня', image: 'dropcase1_6', rarity: 'rare', value: 60, weight: 12 },
-                { name: 'Хуюнтик Меч', image: 'dropcase1_7', rarity: 'rare', value: 80, weight: 10 },
-                { name: 'Хуюнтик Щит', image: 'dropcase1_5', rarity: 'rare', value: 100, weight: 8 },
-                { name: 'Хуюнтик Артефакт', image: 'dropcase1_10', rarity: 'rare', value: 130, weight: 5 },
+                { name: 'Хуюнтик Палка', image: 'dropcase1_2', rarity: 'common', value: 17, weight: 30 },
+                { name: 'Хуюнтик Верёвка', image: 'dropcase1_4', rarity: 'common', value: 23, weight: 25 },
+                { name: 'Хуюнтик Нож', image: 'dropcase1_1', rarity: 'common', value: 31, weight: 20 },
+                { name: 'Хуюнтик Лук', image: 'dropcase1_8', rarity: 'common', value: 42, weight: 15 },
+                { name: 'Хуюнтик Броня', image: 'dropcase1_6', rarity: 'rare', value: 58, weight: 12 },
+                { name: 'Хуюнтик Меч', image: 'dropcase1_7', rarity: 'rare', value: 76, weight: 10 },
+                { name: 'Хуюнтик Щит', image: 'dropcase1_5', rarity: 'rare', value: 98, weight: 8 },
+                { name: 'Хуюнтик Артефакт', image: 'dropcase1_10', rarity: 'rare', value: 125, weight: 5 },
                 { name: 'Хуюнтик Зелье', image: 'dropcase1_9', rarity: 'epic', value: 180, weight: 2 }
             ],
             2: [ // Кейс 200 ꙮ - дропы от 20 до 300 ꙮ
                 { name: 'Кизик Клинок', image: 'dropcase2_1', rarity: 'common', value: 20, weight: 35 },
-                { name: 'Кизик Щит', image: 'dropcase2_2', rarity: 'common', value: 30, weight: 30 },
-                { name: 'Кизик Зелье', image: 'dropcase2_3', rarity: 'common', value: 45, weight: 25 },
-                { name: 'Кизик Амулет', image: 'dropcase2_6', rarity: 'common', value: 60, weight: 20 },
-                { name: 'Кизик Перчатки', image: 'dropcase2_9', rarity: 'rare', value: 80, weight: 15 },
-                { name: 'Кизик Посох', image: 'dropcase2_7', rarity: 'rare', value: 110, weight: 12 },
-                { name: 'Кизик Кольцо', image: 'dropcase2_4', rarity: 'rare', value: 140, weight: 10 },
-                { name: 'Кизик Сапоги', image: 'dropcase2_10', rarity: 'rare', value: 170, weight: 8 },
-                { name: 'Кизик Монета', image: 'dropcase2_5', rarity: 'epic', value: 220, weight: 5 },
-                { name: 'Кизик Корона', image: 'dropcase2_8', rarity: 'epic', value: 300, weight: 2 }
+                { name: 'Кизик Щит', image: 'dropcase2_2', rarity: 'common', value: 28, weight: 30 },
+                { name: 'Кизик Зелье', image: 'dropcase2_3', rarity: 'common', value: 39, weight: 25 },
+                { name: 'Кизик Амулет', image: 'dropcase2_6', rarity: 'common', value: 52, weight: 20 },
+                { name: 'Кизик Перчатки', image: 'dropcase2_9', rarity: 'rare', value: 69, weight: 15 },
+                { name: 'Кизик Посох', image: 'dropcase2_7', rarity: 'rare', value: 89, weight: 12 },
+                { name: 'Кизик Кольцо', image: 'dropcase2_4', rarity: 'rare', value: 114, weight: 10 },
+                { name: 'Кизик Сапоги', image: 'dropcase2_10', rarity: 'rare', value: 143, weight: 8 },
+                { name: 'Кизик Монета', image: 'dropcase2_5', rarity: 'epic', value: 185, weight: 5 },
+                { name: 'Кизик Корона', image: 'dropcase2_8', rarity: 'epic', value: 250, weight: 2 }
             ],
             3: [ // Кейс 150 ꙮ - дропы от 15 до 225 ꙮ
                 { name: 'Жало Яд', image: 'dropcase3_3', rarity: 'common', value: 15, weight: 35 },
-                { name: 'Жало Дротик', image: 'dropcase3_6', rarity: 'common', value: 25, weight: 30 },
-                { name: 'Жало Шип', image: 'dropcase3_8', rarity: 'common', value: 40, weight: 25 },
-                { name: 'Жало Стрела', image: 'dropcase3_7', rarity: 'common', value: 55, weight: 20 },
-                { name: 'Жало Кольчуга', image: 'dropcase3_2', rarity: 'rare', value: 75, weight: 15 },
-                { name: 'Жало Клинок', image: 'dropcase3_1', rarity: 'rare', value: 95, weight: 12 },
-                { name: 'Жало Мастера', image: 'dropcase3_10', rarity: 'rare', value: 120, weight: 10 },
-                { name: 'Жало Лук', image: 'dropcase3_4', rarity: 'rare', value: 150, weight: 8 },
-                { name: 'Жало Сапфир', image: 'dropcase3_5', rarity: 'epic', value: 190, weight: 5 },
-                { name: 'Жало Легендарное', image: 'dropcase3_9', rarity: 'epic', value: 225, weight: 2 }
+                { name: 'Жало Дротик', image: 'dropcase3_6', rarity: 'common', value: 24, weight: 30 },
+                { name: 'Жало Шип', image: 'dropcase3_8', rarity: 'common', value: 35, weight: 25 },
+                { name: 'Жало Стрела', image: 'dropcase3_7', rarity: 'common', value: 48, weight: 20 },
+                { name: 'Жало Кольчуга', image: 'dropcase3_2', rarity: 'rare', value: 64, weight: 15 },
+                { name: 'Жало Клинок', image: 'dropcase3_1', rarity: 'rare', value: 83, weight: 12 },
+                { name: 'Жало Мастера', image: 'dropcase3_10', rarity: 'rare', value: 106, weight: 10 },
+                { name: 'Жало Лук', image: 'dropcase3_4', rarity: 'rare', value: 132, weight: 8 },
+                { name: 'Жало Сапфир', image: 'dropcase3_5', rarity: 'epic', value: 162, weight: 5 },
+                { name: 'Жало Легендарное', image: 'dropcase3_9', rarity: 'epic', value: 196, weight: 2 }
             ],
             4: [ // Кейс 300 ꙮ - дропы от 30 до 450 ꙮ
                 { name: 'Шер Эликсир', image: 'dropcase4_3', rarity: 'common', value: 30, weight: 35 },
-                { name: 'Шер Кинжал', image: 'dropcase4_6', rarity: 'common', value: 50, weight: 30 },
-                { name: 'Шер Секира', image: 'dropcase4_9', rarity: 'common', value: 75, weight: 25 },
-                { name: 'Шер Щит', image: 'dropcase4_2', rarity: 'common', value: 100, weight: 20 },
-                { name: 'Шер Меч', image: 'dropcase4_1', rarity: 'rare', value: 140, weight: 15 },
-                { name: 'Шер Булава', image: 'dropcase4_7', rarity: 'rare', value: 180, weight: 12 },
-                { name: 'Шер Алебарда', image: 'dropcase4_10', rarity: 'rare', value: 230, weight: 10 },
-                { name: 'Шер Лук', image: 'dropcase4_4', rarity: 'rare', value: 280, weight: 8 },
-                { name: 'Шер Рубин', image: 'dropcase4_5', rarity: 'epic', value: 350, weight: 5 },
-                { name: 'Шер Легендарный', image: 'dropcase4_8', rarity: 'epic', value: 450, weight: 2 }
+                { name: 'Шер Кинжал', image: 'dropcase4_6', rarity: 'common', value: 46, weight: 30 },
+                { name: 'Шер Секира', image: 'dropcase4_9', rarity: 'common', value: 65, weight: 25 },
+                { name: 'Шер Щит', image: 'dropcase4_2', rarity: 'common', value: 87, weight: 20 },
+                { name: 'Шер Меч', image: 'dropcase4_1', rarity: 'rare', value: 112, weight: 15 },
+                { name: 'Шер Булава', image: 'dropcase4_7', rarity: 'rare', value: 141, weight: 12 },
+                { name: 'Шер Алебарда', image: 'dropcase4_10', rarity: 'rare', value: 174, weight: 10 },
+                { name: 'Шер Лук', image: 'dropcase4_4', rarity: 'rare', value: 211, weight: 8 },
+                { name: 'Шер Рубин', image: 'dropcase4_5', rarity: 'epic', value: 253, weight: 5 },
+                { name: 'Шер Легендарный', image: 'dropcase4_8', rarity: 'epic', value: 300, weight: 2 }
             ],
             5: [ // Кейс 130 ꙮ - дропы от 13 до 195 ꙮ
                 { name: 'Глист Эликсир', image: 'dropcase5_3', rarity: 'common', value: 13, weight: 35 },
-                { name: 'Глист Червь', image: 'dropcase5_6', rarity: 'common', value: 22, weight: 30 },
-                { name: 'Глист Личинка', image: 'dropcase5_7', rarity: 'common', value: 35, weight: 25 },
-                { name: 'Глист Кокон', image: 'dropcase5_8', rarity: 'common', value: 50, weight: 20 },
-                { name: 'Глист Мутант', image: 'dropcase5_10', rarity: 'rare', value: 70, weight: 15 },
-                { name: 'Глист Броня', image: 'dropcase5_2', rarity: 'rare', value: 90, weight: 12 },
-                { name: 'Глист Клинок', image: 'dropcase5_1', rarity: 'rare', value: 115, weight: 10 },
-                { name: 'Глист Лук', image: 'dropcase5_4', rarity: 'rare', value: 145, weight: 8 },
-                { name: 'Глист Королева', image: 'dropcase5_9', rarity: 'epic', value: 170, weight: 5 },
-                { name: 'Глист Алмаз', image: 'dropcase5_5', rarity: 'epic', value: 195, weight: 2 }
+                { name: 'Глист Червь', image: 'dropcase5_6', rarity: 'common', value: 21, weight: 30 },
+                { name: 'Глист Личинка', image: 'dropcase5_7', rarity: 'common', value: 32, weight: 25 },
+                { name: 'Глист Кокон', image: 'dropcase5_8', rarity: 'common', value: 45, weight: 20 },
+                { name: 'Глист Мутант', image: 'dropcase5_10', rarity: 'rare', value: 61, weight: 15 },
+                { name: 'Глист Броня', image: 'dropcase5_2', rarity: 'rare', value: 79, weight: 12 },
+                { name: 'Глист Клинок', image: 'dropcase5_1', rarity: 'rare', value: 101, weight: 10 },
+                { name: 'Глист Лук', image: 'dropcase5_4', rarity: 'rare', value: 126, weight: 8 },
+                { name: 'Глист Королева', image: 'dropcase5_9', rarity: 'epic', value: 155, weight: 5 },
+                { name: 'Глист Алмаз', image: 'dropcase5_5', rarity: 'epic', value: 188, weight: 2 }
             ],
             6: [ // Кейс 100 ꙮ - дропы от 10 до 150 ꙮ
                 { name: 'Меофен Порошок', image: 'dropcase6_8', rarity: 'common', value: 10, weight: 35 },
                 { name: 'Меофен Таблетка', image: 'dropcase6_6', rarity: 'common', value: 16, weight: 30 },
                 { name: 'Меофен Зелье', image: 'dropcase6_3', rarity: 'common', value: 25, weight: 25 },
-                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'common', value: 35, weight: 20 },
-                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'rare', value: 50, weight: 15 },
+                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'common', value: 36, weight: 20 },
+                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'rare', value: 49, weight: 15 },
                 { name: 'Меофен Щит', image: 'dropcase6_2', rarity: 'rare', value: 65, weight: 12 },
-                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 80, weight: 10 },
-                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'rare', value: 100, weight: 8 },
-                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 125, weight: 5 },
-                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'epic', value: 150, weight: 2 }
+                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 84, weight: 10 },
+                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'rare', value: 107, weight: 8 },
+                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 133, weight: 5 },
+                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'epic', value: 164, weight: 2 }
             ],
             7: [ // Кейс 250 ꙮ - дропы от 25 до 375 ꙮ
                 { name: 'ЧВК Стимулятор', image: 'dropcase7_3', rarity: 'common', value: 25, weight: 35 },
-                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 40, weight: 30 },
-                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 60, weight: 25 },
-                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'common', value: 85, weight: 20 },
-                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 120, weight: 15 },
-                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'rare', value: 160, weight: 12 },
-                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'rare', value: 210, weight: 10 },
-                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'rare', value: 270, weight: 8 },
-                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'epic', value: 320, weight: 5 },
-                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'epic', value: 375, weight: 2 }
+                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 38, weight: 30 },
+                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 54, weight: 25 },
+                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'common', value: 73, weight: 20 },
+                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 95, weight: 15 },
+                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'rare', value: 121, weight: 12 },
+                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'rare', value: 151, weight: 10 },
+                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'rare', value: 186, weight: 8 },
+                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'epic', value: 227, weight: 5 },
+                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'epic', value: 274, weight: 2 }
             ],
             8: [ // Кейс 180 ꙮ - дропы от 18 до 270 ꙮ
                 { name: 'Берег Раковина', image: 'dropcase8_6', rarity: 'common', value: 18, weight: 35 },
-                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 28, weight: 30 },
-                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 42, weight: 25 },
-                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'common', value: 60, weight: 20 },
-                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 85, weight: 15 },
-                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'rare', value: 115, weight: 12 },
-                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'rare', value: 150, weight: 10 },
-                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'rare', value: 190, weight: 8 },
-                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'epic', value: 230, weight: 5 },
-                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'epic', value: 270, weight: 2 }
+                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 27, weight: 30 },
+                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 37, weight: 25 },
+                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'common', value: 49, weight: 20 },
+                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 63, weight: 15 },
+                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'rare', value: 80, weight: 12 },
+                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'rare', value: 99, weight: 10 },
+                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'rare', value: 121, weight: 8 },
+                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'epic', value: 147, weight: 5 },
+                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'epic', value: 177, weight: 2 }
             ],
             9: [ // Кейс 220 ꙮ - дропы от 22 до 330 ꙮ
                 { name: 'Молот Буря', image: 'dropcase9_3', rarity: 'common', value: 22, weight: 35 },
-                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 35, weight: 30 },
-                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 55, weight: 25 },
-                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'common', value: 75, weight: 20 },
-                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 105, weight: 15 },
-                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'rare', value: 140, weight: 12 },
-                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'rare', value: 180, weight: 10 },
-                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'rare', value: 220, weight: 8 },
-                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'epic', value: 275, weight: 5 },
-                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'epic', value: 330, weight: 2 }
+                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 33, weight: 30 },
+                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 47, weight: 25 },
+                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'common', value: 63, weight: 20 },
+                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 82, weight: 15 },
+                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'rare', value: 104, weight: 12 },
+                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'rare', value: 130, weight: 10 },
+                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'rare', value: 160, weight: 8 },
+                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'epic', value: 195, weight: 5 },
+                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'epic', value: 236, weight: 2 }
             ],
             10: [ // Кейс 160 ꙮ - дропы от 16 до 240 ꙮ
                 { name: 'Вихрь Эликсир', image: 'dropcase10_3', rarity: 'common', value: 16, weight: 35 },
                 { name: 'Вихрь Ветер', image: 'dropcase10_6', rarity: 'common', value: 26, weight: 30 },
-                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 40, weight: 25 },
-                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'common', value: 55, weight: 20 },
-                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 75, weight: 15 },
-                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'rare', value: 100, weight: 12 },
-                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'rare', value: 130, weight: 10 },
-                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'rare', value: 165, weight: 8 },
-                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'epic', value: 200, weight: 5 },
-                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'epic', value: 240, weight: 2 }
+                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 38, weight: 25 },
+                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'common', value: 53, weight: 20 },
+                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 71, weight: 15 },
+                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'rare', value: 92, weight: 12 },
+                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'rare', value: 117, weight: 10 },
+                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'rare', value: 146, weight: 8 },
+                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'epic', value: 179, weight: 5 },
+                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'epic', value: 218, weight: 2 }
             ],
             11: [ // Кейс 350 ꙮ - дропы от 35 до 525 ꙮ
                 { name: 'Призрак Зелье', image: 'dropcase11_3', rarity: 'common', value: 35, weight: 35 },
-                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 55, weight: 30 },
-                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 80, weight: 25 },
-                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'common', value: 110, weight: 20 },
-                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 150, weight: 15 },
-                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'rare', value: 200, weight: 12 },
-                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'rare', value: 260, weight: 10 },
-                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'rare', value: 330, weight: 8 },
-                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'epic', value: 420, weight: 5 },
-                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'epic', value: 525, weight: 2 }
+                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 51, weight: 30 },
+                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 70, weight: 25 },
+                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'common', value: 92, weight: 20 },
+                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 118, weight: 15 },
+                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'rare', value: 148, weight: 12 },
+                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'rare', value: 183, weight: 10 },
+                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'rare', value: 223, weight: 8 },
+                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'epic', value: 269, weight: 5 },
+                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'epic', value: 321, weight: 2 }
             ],
             12: [ // Кейс 290 ꙮ - дропы от 29 до 435 ꙮ
                 { name: 'Лёд Зелье', image: 'dropcase12_3', rarity: 'common', value: 29, weight: 35 },
-                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 45, weight: 30 },
-                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 70, weight: 25 },
-                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'common', value: 95, weight: 20 },
-                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 130, weight: 15 },
-                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'rare', value: 170, weight: 12 },
-                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'rare', value: 220, weight: 10 },
-                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'rare', value: 280, weight: 8 },
-                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'epic', value: 350, weight: 5 },
-                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'epic', value: 435, weight: 2 }
+                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 43, weight: 30 },
+                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 59, weight: 25 },
+                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'common', value: 78, weight: 20 },
+                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 100, weight: 15 },
+                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'rare', value: 125, weight: 12 },
+                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'rare', value: 154, weight: 10 },
+                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'rare', value: 187, weight: 8 },
+                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'epic', value: 225, weight: 5 },
+                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'epic', value: 268, weight: 2 }
             ],
             13: [ // Кейс 400 ꙮ - дропы от 40 до 600 ꙮ
                 { name: 'Огонь Эликсир', image: 'dropcase13_3', rarity: 'common', value: 40, weight: 35 },
-                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 65, weight: 30 },
-                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 95, weight: 25 },
-                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'common', value: 130, weight: 20 },
-                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 180, weight: 15 },
-                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'rare', value: 240, weight: 12 },
-                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'rare', value: 310, weight: 10 },
-                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'rare', value: 390, weight: 8 },
-                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'epic', value: 480, weight: 5 },
-                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'epic', value: 600, weight: 2 }
+                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 57, weight: 30 },
+                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 77, weight: 25 },
+                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'common', value: 100, weight: 20 },
+                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 127, weight: 15 },
+                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'rare', value: 158, weight: 12 },
+                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'rare', value: 194, weight: 10 },
+                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'rare', value: 235, weight: 8 },
+                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'epic', value: 282, weight: 5 },
+                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'epic', value: 335, weight: 2 }
             ],
             14: [ // Кейс 320 ꙮ - дропы от 32 до 480 ꙮ
                 { name: 'Тень Зелье', image: 'dropcase14_3', rarity: 'common', value: 32, weight: 35 },
-                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 50, weight: 30 },
-                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 75, weight: 25 },
-                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'common', value: 105, weight: 20 },
-                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 145, weight: 15 },
-                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'rare', value: 190, weight: 12 },
-                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'rare', value: 250, weight: 10 },
-                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'rare', value: 315, weight: 8 },
-                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'epic', value: 390, weight: 5 },
-                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'epic', value: 480, weight: 2 }
+                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 47, weight: 30 },
+                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 65, weight: 25 },
+                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'common', value: 86, weight: 20 },
+                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 110, weight: 15 },
+                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'rare', value: 138, weight: 12 },
+                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'rare', value: 170, weight: 10 },
+                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'rare', value: 207, weight: 8 },
+                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'epic', value: 249, weight: 5 },
+                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'epic', value: 297, weight: 2 }
             ],
             15: [ // Кейс 270 ꙮ - дропы от 27 до 405 ꙮ
                 { name: 'Свет Вода', image: 'dropcase15_3', rarity: 'common', value: 27, weight: 35 },
-                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 42, weight: 30 },
-                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 65, weight: 25 },
-                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'common', value: 90, weight: 20 },
-                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 125, weight: 15 },
-                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'rare', value: 165, weight: 12 },
-                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'rare', value: 215, weight: 10 },
-                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'rare', value: 275, weight: 8 },
-                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'epic', value: 340, weight: 5 },
-                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'epic', value: 405, weight: 2 }
+                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 41, weight: 30 },
+                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 57, weight: 25 },
+                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'common', value: 76, weight: 20 },
+                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 98, weight: 15 },
+                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'rare', value: 123, weight: 12 },
+                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'rare', value: 152, weight: 10 },
+                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'rare', value: 185, weight: 8 },
+                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'epic', value: 222, weight: 5 },
+                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'epic', value: 264, weight: 2 }
             ],
             16: [ // Кейс 500 ꙮ - дропы от 50 до 750 ꙮ
                 { name: 'Хаос Зелье', image: 'dropcase16_3', rarity: 'common', value: 50, weight: 35 },
-                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 80, weight: 30 },
-                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 120, weight: 25 },
-                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'common', value: 165, weight: 20 },
-                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 225, weight: 15 },
-                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'rare', value: 295, weight: 12 },
-                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'rare', value: 380, weight: 10 },
-                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'rare', value: 480, weight: 8 },
-                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'epic', value: 600, weight: 5 },
-                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'epic', value: 750, weight: 2 }
+                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 72, weight: 30 },
+                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 97, weight: 25 },
+                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'common', value: 125, weight: 20 },
+                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 157, weight: 15 },
+                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'rare', value: 193, weight: 12 },
+                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'rare', value: 234, weight: 10 },
+                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'rare', value: 280, weight: 8 },
+                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'epic', value: 332, weight: 5 },
+                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'epic', value: 390, weight: 2 }
             ],
             17: [ // Кейс 450 ꙮ - дропы от 45 до 675 ꙮ
                 { name: 'Порядок Эликсир', image: 'dropcase17_3', rarity: 'common', value: 45, weight: 35 },
-                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 70, weight: 30 },
-                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 105, weight: 25 },
-                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'common', value: 145, weight: 20 },
-                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 200, weight: 15 },
-                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'rare', value: 260, weight: 12 },
-                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'rare', value: 335, weight: 10 },
-                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'rare', value: 420, weight: 8 },
-                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'epic', value: 520, weight: 5 },
-                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'epic', value: 675, weight: 2 }
+                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 66, weight: 30 },
+                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 90, weight: 25 },
+                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'common', value: 117, weight: 20 },
+                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 148, weight: 15 },
+                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'rare', value: 182, weight: 12 },
+                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'rare', value: 220, weight: 10 },
+                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'rare', value: 262, weight: 8 },
+                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'epic', value: 309, weight: 5 },
+                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'epic', value: 361, weight: 2 }
             ],
             18: [ // Кейс 380 ꙮ - дропы от 38 до 570 ꙮ
                 { name: 'Время Зелье', image: 'dropcase18_3', rarity: 'common', value: 38, weight: 35 },
-                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 60, weight: 30 },
-                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 90, weight: 25 },
-                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'common', value: 125, weight: 20 },
-                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 170, weight: 15 },
-                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'rare', value: 225, weight: 12 },
-                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'rare', value: 290, weight: 10 },
-                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'rare', value: 365, weight: 8 },
-                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'epic', value: 455, weight: 5 },
-                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'epic', value: 570, weight: 2 }
+                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 56, weight: 30 },
+                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 77, weight: 25 },
+                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'common', value: 101, weight: 20 },
+                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 128, weight: 15 },
+                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'rare', value: 159, weight: 12 },
+                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'rare', value: 194, weight: 10 },
+                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'rare', value: 233, weight: 8 },
+                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'epic', value: 277, weight: 5 },
+                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'epic', value: 326, weight: 2 }
             ],
             19: [ // Кейс 600 ꙮ - дропы от 60 до 900 ꙮ
                 { name: 'Космос Нектар', image: 'dropcase19_3', rarity: 'common', value: 60, weight: 35 },
-                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 95, weight: 30 },
-                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 140, weight: 25 },
-                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'common', value: 195, weight: 20 },
-                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 270, weight: 15 },
-                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'rare', value: 360, weight: 12 },
-                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'rare', value: 465, weight: 10 },
-                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'rare', value: 585, weight: 8 },
-                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'epic', value: 720, weight: 5 },
-                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'epic', value: 900, weight: 2 }
+                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 85, weight: 30 },
+                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 113, weight: 25 },
+                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'common', value: 144, weight: 20 },
+                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 179, weight: 15 },
+                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'rare', value: 218, weight: 12 },
+                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'rare', value: 262, weight: 10 },
+                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'rare', value: 311, weight: 8 },
+                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'epic', value: 366, weight: 5 },
+                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'epic', value: 427, weight: 2 }
             ],
             20: [ // Кейс 750 ꙮ - дропы от 75 до 1125 ꙮ
                 { name: 'Вечность Эликсир', image: 'dropcase20_3', rarity: 'common', value: 75, weight: 35 },
-                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 120, weight: 30 },
-                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 180, weight: 25 },
-                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'common', value: 250, weight: 20 },
-                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 340, weight: 15 },
-                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'rare', value: 450, weight: 12 },
-                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'rare', value: 580, weight: 10 },
-                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'rare', value: 730, weight: 8 },
-                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'epic', value: 900, weight: 5 },
-                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 1125, weight: 2 }
+                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 108, weight: 30 },
+                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 146, weight: 25 },
+                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'common', value: 189, weight: 20 },
+                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 237, weight: 15 },
+                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'rare', value: 291, weight: 12 },
+                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'rare', value: 351, weight: 10 },
+                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'rare', value: 418, weight: 8 },
+                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'epic', value: 492, weight: 5 },
+                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 574, weight: 2 }
             ]
         };
 
@@ -1637,8 +1720,40 @@
                 }
             });
             
+            // 🚨 ПРОВЕРЯЕМ АВТОМАТИЧЕСКУЮ БЛОКИРОВКУ ОТ ГОСДОЛГА
+            checkAutoDebtBlock();
+            
+            // 💡 ПРОВЕРЯЕМ ПОЛНЫЙ НОЛЬ И ПОКАЗЫВАЕМ ПОДСКАЗКУ
+            checkZeroBalance();
+            
             // Save data when balance changes
             saveGameData();
+        }
+        
+        // 🚨 АВТОМАТИЧЕСКАЯ БЛОКИРОВКА: если есть госдолг, но нельзя открыть ни одного кейса
+        function checkAutoDebtBlock() {
+            if (!hasDebt || isBlocked) return; // Нет долга или уже заблокирован
+            
+            // Проверяем минимальную цену кейса
+            const minCasePrice = Math.min(...Array.from(document.querySelectorAll('.case')).map(el => parseInt(el.dataset.price)));
+            
+            // Если баланс меньше самого дешёвого кейса - блокируем сразу!
+            if (balance < minCasePrice) {
+                console.log(`🚨 АВТОБЛОКИРОВКА: Баланс ${balance} ꙮ < минимальная цена кейса ${minCasePrice} ꙮ при активном госдолге!`);
+                
+                // Сразу блокируем без возможности открыть кейсы
+                isBlocked = true;
+                hasDebt = false;
+                debtCasesLeft = 0;
+                hasBadCredit = true; // 📉 ПОРТИМ КРЕДИТНЫЙ РЕЙТИНГ!
+                
+                updateDebtStatus();
+                showBlockBanner();
+                saveGameData();
+                
+                // Показываем специальное сообщение
+                showDebtMessage('Госдолг не возвращён! Денег нет даже на самый дешёвый кейс! БЛОКИРОВКА!', 'error');
+            }
         }
 
         let selectedInventoryIndex = -1;
@@ -1646,6 +1761,12 @@
         function updateInventory() {
             const inventoryGrid = document.getElementById('inventoryGrid');
             inventoryGrid.innerHTML = '';
+            
+            // 🚫 ПРОВЕРЯЕМ АРЕСТ ИНВЕНТАРЯ
+            if (isBlocked) {
+                showArrestedInventory();
+                return;
+            }
             
             inventory.forEach((item, index) => {
                 const itemEl = document.createElement('div');
@@ -1693,8 +1814,89 @@
                 inventoryGrid.appendChild(itemEl);
             });
         }
+        
+        // 🚫 ПОКАЗЫВАЕМ АРЕСТОВАННЫЙ ИНВЕНТАРЬ
+        function showArrestedInventory() {
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            
+            const arrestBanner = document.createElement('div');
+            arrestBanner.style.cssText = `
+                grid-column: 1 / -1;
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                border: 3px solid #fff;
+                border-radius: 15px;
+                padding: 30px;
+                text-align: center;
+                animation: arrestPulse 2s ease-in-out infinite;
+                margin: 20px 0;
+                box-shadow: 0 5px 20px rgba(231, 76, 60, 0.5);
+            `;
+            
+            arrestBanner.innerHTML = `
+                <h3 style="color: #fff; font-size: 24px; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+                    🚫 ВАШЕ ИМУЩЕСТВО АРЕСТОВАНО! 🚫
+                </h3>
+                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                    За неуплату госдолга СПО конфисковало ваш инвентарь.<br>
+                    <strong style="color: #ffeb3b;">Все предметы заблокированы до погашения долгов!</strong>
+                </p>
+                <div style="
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border: 1px solid rgba(255,255,255,0.3);
+                ">
+                    <p style="color: #fff; font-size: 14px; margin: 0; line-height: 1.3;">
+                        📦 Заблокировано предметов: <strong>${inventory.length}</strong><br>
+                        💰 Общая стоимость: <strong>${inventory.reduce((sum, item) => sum + item.value, 0)} ꙮ</strong><br>
+                        🔒 Доступ восстановится после покаяния
+                    </p>
+                </div>
+                <div style="
+                    background: rgba(0,0,0,0.3);
+                    border-radius: 8px;
+                    padding: 10px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                ">
+                    <p style="color: #ffd700; font-size: 12px; margin: 0; font-style: italic;">
+                        ⚖️ "Согласно статье 228 УК СПО, неплательщики госдолга<br>
+                        подлежат конфискации имущества до полного расчёта."
+                    </p>
+                </div>
+            `;
+            
+            // Добавляем анимацию пульсации для ареста
+            if (!document.getElementById('arrest-pulse-style')) {
+                const style = document.createElement('style');
+                style.id = 'arrest-pulse-style';
+                style.textContent = `
+                    @keyframes arrestPulse {
+                        0%, 100% { 
+                            transform: scale(1);
+                            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.5);
+                        }
+                        50% { 
+                            transform: scale(1.02);
+                            box-shadow: 0 8px 30px rgba(231, 76, 60, 0.8), 0 0 40px rgba(231, 76, 60, 0.3);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            inventoryGrid.appendChild(arrestBanner);
+            
+            console.log('🚫 Инвентарь арестован! Показан баннер конфискации');
+        }
 
         function openItemMenu(index) {
+            // 🚫 БЛОКИРУЕМ МЕНЮ ПРЕДМЕТОВ ПРИ АРЕСТЕ
+            if (isBlocked) {
+                showArrestMessage();
+                return;
+            }
+            
             if (index >= 0 && index < inventory.length) {
                 selectedInventoryIndex = index;
                 const item = inventory[index];
@@ -1720,6 +1922,90 @@
                 itemMenuModal.classList.add('active');
             }
         }
+        
+        // 🚫 ПОКАЗЫВАЕМ СООБЩЕНИЕ О БЛОКИРОВКЕ ИНВЕНТАРЯ
+        function showArrestMessage() {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                border: 3px solid #fff;
+                border-radius: 15px;
+                padding: 25px;
+                z-index: 10006;
+                text-align: center;
+                max-width: 400px;
+                width: 90vw;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                animation: arrestShake 0.5s ease-in-out;
+            `;
+            
+            message.innerHTML = `
+                <h3 style="color: #fff; font-size: 22px; margin-bottom: 15px;">🚫 ДОСТУП ЗАПРЕЩЁН! 🚫</h3>
+                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                    Ваше имущество арестовано СПО!<br>
+                    <strong style="color: #ffeb3b;">Предметы заблокированы до погашения долгов!</strong>
+                </p>
+                <div style="
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin-bottom: 20px;
+                ">
+                    <p style="color: #ffd700; font-size: 13px; margin: 0;">
+                        🔒 Для разблокировки покайтесь и погасите долги
+                    </p>
+                </div>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #fff;
+                    color: #e74c3c;
+                    border: none;
+                    padding: 12px 25px;
+                    border-radius: 10px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    😤 Понял!
+                </button>
+            `;
+            
+            // Добавляем анимацию тряски
+            if (!document.getElementById('arrest-shake-style')) {
+                const style = document.createElement('style');
+                style.id = 'arrest-shake-style';
+                style.textContent = `
+                    @keyframes arrestShake {
+                        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+                        10% { transform: translate(-50%, -50%) rotate(-1deg); }
+                        20% { transform: translate(-50%, -50%) rotate(1deg); }
+                        30% { transform: translate(-50%, -50%) rotate(-1deg); }
+                        40% { transform: translate(-50%, -50%) rotate(1deg); }
+                        50% { transform: translate(-50%, -50%) rotate(-1deg); }
+                        60% { transform: translate(-50%, -50%) rotate(1deg); }
+                        70% { transform: translate(-50%, -50%) rotate(-1deg); }
+                        80% { transform: translate(-50%, -50%) rotate(1deg); }
+                        90% { transform: translate(-50%, -50%) rotate(-1deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(message);
+            
+            // Автоматически убираем через 4 секунды
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 4000);
+            
+            console.log('🚫 Показано сообщение о блокировке инвентаря');
+        }
 
         function sellItemFromMenu() {
             if (selectedInventoryIndex >= 0 && selectedInventoryIndex < inventory.length) {
@@ -1731,6 +2017,12 @@
                 addToWinglist(item);
                 saveGameData(); // Save when selling from menu
                 closeItemMenu();
+                
+                // 💡 Дополнительная проверка подсказки после продажи
+                checkZeroBalance();
+                
+                // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ ДЕЙСТВИЯ
+                checkPendingBonusHint();
             }
         }
 
@@ -1767,6 +2059,12 @@
         }
 
         function openCase(caseType, price) {
+            // 🚫 ПРОВЕРКА БЛОКИРОВКИ ОТ ГОСДОЛГА
+            if (isBlocked) {
+                showDebtMessage('Кейсы заблокированы! Погасите долг или покайтесь!', 'error');
+                return;
+            }
+            
             // 🛡️ ЗАЩИТА ОТ КУЛДАУНА
             const now = Date.now();
             if (caseCooldowns[caseType] && now - caseCooldowns[caseType] < 2000) {
@@ -1802,6 +2100,9 @@
             // Only proceed with roulette if balance is sufficient
             balance -= price;
             updateBalance();
+            
+            // 🏛️ ПРОВЕРЯЕМ ГОСДОЛГ ПОСЛЕ ОТКРЫТИЯ КЕЙСА
+            checkDebtOnCaseOpen();
             
             // 🛡️ ВКЛЮЧАЕМ ЗАЩИТУ РУЛЕТКИ
             rouletteProtection = true;
@@ -1882,7 +2183,7 @@
                 itemEl.appendChild(nameDiv);
                 
                 const valueDiv = document.createElement('div');
-                valueDiv.style.cssText = 'font-size: 10px; color: #ffd700; font-weight: bold;';
+                valueDiv.style.cssText = 'font-size: 10px; color: #ffd700; font-weight: bold; text-align: center;';
                 valueDiv.textContent = `${item.value} ꙮ`;
                 itemEl.appendChild(valueDiv);
                 
@@ -1924,8 +2225,11 @@
                 
                 // После анимации показываем результат
                 setTimeout(() => {
-                    // Звуки отключены
                     const winningItem = rouletteItems[stopIndex % rouletteItems.length];
+                    
+                    // 🎵 ПРОИГРЫВАЕМ ЗВУК В ЗАВИСИМОСТИ ОТ РЕДКОСТИ И ЦЕННОСТИ
+                    playDropSoundByRarity(winningItem);
+                    
                     showResult(winningItem);
                     
                     // 🛡️ ОТКЛЮЧАЕМ ЗАЩИТУ ПОСЛЕ ПОКАЗА РЕЗУЛЬТАТА
@@ -1968,6 +2272,9 @@
                 updateInventory();
                 saveGameData(); // Save when keeping item
                 hideResult();
+                
+                // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ ДЕЙСТВИЯ
+                checkPendingBonusHint();
             }
         }
 
@@ -1978,6 +2285,9 @@
                 addToWinglist(currentItem);
                 saveGameData(); // Save when selling item
                 hideResult();
+                
+                // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ ДЕЙСТВИЯ
+                checkPendingBonusHint();
             }
         }
 
@@ -2015,6 +2325,9 @@
             });
             
             currentItem = null;
+            
+            // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ ЗАКРЫТИЯ РУЛЕТКИ
+            checkPendingBonusHint();
         }
 
         // 🛡️ ЗАБЛОКИРОВАННОЕ ЗАКРЫТИЕ РУЛЕТКИ
@@ -2397,7 +2710,7 @@
                 showPromocodeMessage(`✅ Промокод активирован! ${promoData.description}`, 'success');
                 
                 usedPromocodes.push(promocode);
-                updateBalance();
+                updateBalance(); // Это автоматически скроет подсказку BONUS если баланс > 0
                 saveGameData();
                 promocodeInput.value = '';
                 
@@ -2432,7 +2745,7 @@
             }
         }
         
-        // Cheat function: Triple click on promocode input to reset used promocodes
+        // Cheat function: Triple click on promocode input to reset EVERYTHING
         function handlePromocodeInputClick(event) {
             promocodeClickCount++;
             
@@ -2448,30 +2761,72 @@
             
             // Check for triple click
             if (promocodeClickCount === 3) {
-                resetUsedPromocodes();
+                resetEverything();
                 promocodeClickCount = 0;
                 clearTimeout(promocodeClickTimer);
             }
         }
         
-        // Reset used promocodes (cheat function)
-        function resetUsedPromocodes() {
-            usedPromocodes = []; // Clear all used promocodes
-            saveGameData(); // Save the reset state
+        // ULTIMATE CHEAT: Reset EVERYTHING including credit history
+        function resetEverything() {
+            // Сброс промокодов
+            usedPromocodes = [];
+            
+            // СБРОС КРЕДИТНОЙ ИСТОРИИ - ГЛАВНОЕ!
+            hasBadCredit = false;
+            
+            // СБРОС ПОДСКАЗКИ BONUS
+            bonusHintShown = false;
+            pendingBonusHint = false;
+            pendingBonusHint = false;
+            pendingBonusHint = false;
+            
+            // Убираем блокировки если есть
+            isBlocked = false;
+            hasDebt = false;
+            debtCasesLeft = 0;
+            
+            // Обновляем все интерфейсы
+            updateDebtStatus();
+            if (isBlocked) {
+                hideBlockBanner();
+            }
+            
+            // Сохраняем изменения
+            saveGameData();
             
             const promocodeMessage = document.getElementById('promocodeMessage');
-            promocodeMessage.textContent = '🔄 Промокоды сброшены! Можно использовать заново.';
+            promocodeMessage.innerHTML = `
+                <div style="color: #27ae60; font-weight: bold;">🔄 ВСЁ СБРОШЕНО!</div>
+                <div style="color: #ffd700; font-size: 10px; margin-top: 2px;">
+                    ✅ Промокоды сброшены<br>
+                    ✅ Кредитная история очищена<br>
+                    ✅ Подсказка BONUS сброшена<br>
+                    ✅ Госдолг снова доступен
+                </div>
+            `;
             promocodeMessage.style.display = 'block';
-            promocodeMessage.style.color = '#27ae60'; // Green color
-            promocodeMessage.style.fontSize = '11px'; // Smaller text
+            promocodeMessage.style.fontSize = '11px';
             
-            // Hide message after 3 seconds
+            // Hide message after 5 seconds
             setTimeout(() => {
                 promocodeMessage.style.display = 'none';
-            }, 3000);
+            }, 5000);
             
-            console.log('🔓 CHEAT: Все промокоды сброшены и могут быть использованы повторно!');
+            console.log('🔥 ULTIMATE CHEAT: Промокоды + кредитная история + подсказка BONUS ПОЛНОСТЬЮ сброшены!');
+            console.log('💰 Теперь можно снова брать госдолг и использовать все промокоды!');
         }
+        
+        // 💡 ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ КНОПКИ
+        window.closeBonusModal = function() {
+            const modal = document.getElementById('bonus-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+                bonusHintShown = true; // Помечаем что показали
+                saveGameData(); // Сохраняем флаг
+                console.log('💡 Менюшка BONUS закрыта, больше не показываем');
+            }
+        };
 
         // СКРИМЕР С ВИДЕО И РЕЗЕРВНЫМ ТЕКСТОМ
         function executeJumpscare() {
@@ -2701,6 +3056,804 @@
             }, 2000);
         }
         
+        // 🏛️ ФУНКЦИИ ГОСДОЛГА
+        
+        function takeDebt() {
+            if (hasBadCredit) {
+                showDebtMessage('Плохой кредитный рейтинг! Госдолг вам недоступен!', 'error');
+                return;
+            }
+            
+            if (hasDebt) {
+                showDebtMessage('У вас уже есть активный госдолг!', 'warning');
+                return;
+            }
+            
+            if (isBlocked) {
+                showDebtMessage('Сначала погасите предыдущий долг!', 'error');
+                return;
+            }
+            
+            // Выдаем госдолг
+            balance += 300;
+            hasDebt = true;
+            debtCasesLeft = 3;
+            
+            updateBalance();
+            updateDebtStatus();
+            saveGameData();
+            
+            // Показываем предупреждение
+            showDebtWarning();
+            
+            console.log('💰 Госдолг взят: +300 ꙮ, долг будет списан через 3 кейса');
+        }
+        
+        function showDebtWarning() {
+            const warning = document.createElement('div');
+            warning.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #2c3e50, #34495e);
+                border: 3px solid #e74c3c;
+                border-radius: 20px;
+                padding: 20px;
+                z-index: 10004;
+                text-align: center;
+                max-width: 320px;
+                width: 90vw;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            `;
+            
+            // Мобильная адаптация
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                warning.innerHTML = `
+                    <h2 style="color: #e74c3c; font-size: 18px; margin-bottom: 12px; line-height: 1.2;">⚠️ ГОСДОЛГ ВЫДАН ⚠️</h2>
+                    <p style="color: #fff; font-size: 13px; margin-bottom: 15px; line-height: 1.3;">
+                        Вы взяли госдолг у СПО.<br>
+                        <strong style="color: #ff6b6b;">Вы будете ликвидированы, если не расплатитесь.</strong>
+                    </p>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                        <p style="color: #ffd700; font-size: 12px; margin: 0; line-height: 1.3;">
+                            💰 Получено: +300 ꙮ<br>
+                            📅 К возврату: 500 ꙮ через 3 кейса
+                        </p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: #e74c3c; color: white; border: none; padding: 10px 20px;
+                        border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer;
+                        width: 100%; max-width: 200px;
+                    ">😰 Понятно</button>
+                `;
+            } else {
+                warning.innerHTML = `
+                    <h2 style="color: #e74c3c; font-size: 24px; margin-bottom: 15px;">⚠️ ГОСДОЛГ ВЫДАН ⚠️</h2>
+                    <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                        Вы взяли госдолг у СПО.<br>
+                        <strong style="color: #ff6b6b;">Вы будете ликвидированы, если не расплатитесь.</strong>
+                    </p>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                        <p style="color: #ffd700; font-size: 14px; margin: 0;">
+                            💰 Получено: +300 ꙮ<br>
+                            📅 К возврату: 500 ꙮ через 3 кейса
+                        </p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: #e74c3c; color: white; border: none; padding: 12px 25px;
+                        border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
+                    ">😰 Понятно</button>
+                `;
+            }
+            
+            document.body.appendChild(warning);
+            
+            // Автоматически убираем через 10 секунд
+            setTimeout(() => {
+                if (document.body.contains(warning)) {
+                    document.body.removeChild(warning);
+                }
+            }, 10000);
+        }
+        
+        function updateDebtStatus() {
+            const debtButton = document.getElementById('debtButton');
+            const debtStatus = document.getElementById('debtStatus');
+            
+            if (hasBadCredit) {
+                debtButton.style.display = 'none';
+                debtStatus.style.display = 'block';
+                debtStatus.innerHTML = `🚫 ПЛОХОЙ РЕЙТИНГ`;
+                debtStatus.style.color = '#e74c3c';
+            } else if (hasDebt && debtCasesLeft > 0) {
+                debtButton.style.display = 'none';
+                debtStatus.style.display = 'block';
+                debtStatus.innerHTML = `⚠️ Долг: ${debtCasesLeft} кейсов до списания 500 ꙮ`;
+                debtStatus.style.color = '#ff6b6b';
+            } else if (isBlocked) {
+                debtButton.style.display = 'none';
+                debtStatus.style.display = 'block';
+                debtStatus.innerHTML = `🚨 ЗАБЛОКИРОВАНО`;
+                debtStatus.style.color = '#e74c3c';
+            } else {
+                debtButton.style.display = 'block';
+                debtStatus.style.display = 'none';
+            }
+        }
+        
+        function checkDebtOnCaseOpen() {
+            if (!hasDebt || debtCasesLeft <= 0) return;
+            
+            debtCasesLeft--;
+            console.log(`📉 Кейс открыт, осталось ${debtCasesLeft} до списания долга`);
+            
+            if (debtCasesLeft <= 0) {
+                // Время платить!
+                processDebtPayment();
+            }
+            
+            updateDebtStatus();
+            saveGameData();
+        }
+        
+        function processDebtPayment() {
+            const debtAmount = 500;
+            
+            if (balance >= debtAmount) {
+                // Успешно списываем долг
+                balance -= debtAmount;
+                hasDebt = false;
+                debtCasesLeft = 0;
+                
+                updateBalance();
+                updateDebtStatus();
+                saveGameData();
+                
+                showDebtMessage(`✅ Госдолг погашен! Списано ${debtAmount} ꙮ`, 'success');
+                console.log('✅ Госдолг успешно погашен');
+            } else {
+                // Денег нет - блокируем И портим кредитный рейтинг!
+                isBlocked = true;
+                hasDebt = false;
+                debtCasesLeft = 0;
+                hasBadCredit = true; // 📉 ПОРТИМ КРЕДИТНЫЙ РЕЙТИНГ НАВСЕГДА!
+                
+                updateDebtStatus();
+                showBlockBanner();
+                saveGameData();
+                
+                console.log('🚫 Долг не погашен - пользователь заблокирован! Кредитный рейтинг испорчен!');
+            }
+        }
+        
+        function showBlockBanner() {
+            const blockBanner = document.getElementById('blockBanner');
+            const blockMessage = document.getElementById('blockMessage');
+            const repentButton = document.getElementById('repentButton');
+            
+            blockMessage.textContent = 'Долг не возвращён. За вами выехала пчелиция!';
+            
+            // Показываем кнопку покаяния если есть что забрать
+            if (balance > 0 || inventory.length > 0) { // Любой инвентарь или баланс
+                repentButton.style.display = 'inline-block';
+                console.log('🙏 Показываем кнопку покаяния - есть что забрать');
+            } else {
+                repentButton.style.display = 'none';
+                console.log('💡 Нечего забирать - только покаяние недоступно');
+            }
+            
+            blockBanner.style.display = 'block';
+            
+            // Скрываем кейсы
+            document.querySelector('.cases-section').style.opacity = '0.3';
+            document.querySelector('.cases-section').style.pointerEvents = 'none';
+        }
+        
+        function hideBlockBanner() {
+            const blockBanner = document.getElementById('blockBanner');
+            blockBanner.style.display = 'none';
+            
+            // Показываем кейсы
+            document.querySelector('.cases-section').style.opacity = '1';
+            document.querySelector('.cases-section').style.pointerEvents = 'auto';
+        }
+        
+        function repent() {
+            // Запускаем интерактивное покаяние с счётчиком кликов
+            startRepentanceClicking();
+        }
+        
+        function startRepentanceClicking() {
+            let clickCount = 0;
+            let maxClicks = 500; // Теперь переменная, может быть уменьшена
+            let spoServiceUsed = false; // Флаг использования службы СПО
+            
+            // Сохраняем старые значения для показа потерь
+            const oldBalance = balance;
+            const oldInventoryCount = inventory.length;
+            
+            // Создаём интерфейс покаяния с счётчиком
+            const repentanceInterface = document.createElement('div');
+            repentanceInterface.id = 'repentance-clicking';
+            repentanceInterface.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(3px);
+                z-index: 10005;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            `;
+            
+            // Определяем мобильную версию
+            const isMobile = window.innerWidth <= 768;
+            
+            const modalContent = `
+                <div style="
+                    background: linear-gradient(135deg, #27ae60, #229954);
+                    border: 3px solid #fff;
+                    border-radius: ${isMobile ? '15px' : '20px'};
+                    padding: ${isMobile ? '25px 20px' : '40px'};
+                    text-align: center;
+                    max-width: ${isMobile ? '320px' : '500px'};
+                    width: ${isMobile ? '90vw' : 'auto'};
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+                    animation: repentGlow 2s ease-in-out infinite;
+                ">
+                    <h2 style="color: #fff; font-size: ${isMobile ? '20px' : '28px'}; margin-bottom: ${isMobile ? '15px' : '20px'};">🙏 ПОКАЯНИЕ 🙏</h2>
+                    <p id="repent-description" style="color: #fff; font-size: ${isMobile ? '14px' : '18px'}; margin-bottom: ${isMobile ? '20px' : '30px'}; line-height: 1.4;">
+                        Для прощения кликайте по кнопке<br>
+                        <span id="clicks-required">500</span> раз со искренним раскаянием
+                    </p>
+                    <div style="
+                        background: rgba(255,255,255,0.2);
+                        border-radius: ${isMobile ? '10px' : '15px'};
+                        padding: ${isMobile ? '15px' : '20px'};
+                        margin-bottom: ${isMobile ? '20px' : '30px'};
+                    ">
+                        <div id="repent-counter" style="
+                            color: #fff;
+                            font-size: ${isMobile ? '24px' : '32px'};
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        ">0 / 500</div>
+                        <div style="
+                            background: rgba(255,255,255,0.2);
+                            height: ${isMobile ? '8px' : '10px'};
+                            border-radius: ${isMobile ? '4px' : '5px'};
+                            overflow: hidden;
+                        ">
+                            <div id="repent-progress" style="
+                                background: #fff;
+                                height: 100%;
+                                width: 0%;
+                                transition: width 0.1s ease;
+                                border-radius: ${isMobile ? '4px' : '5px'};
+                            "></div>
+                        </div>
+                    </div>
+                    <div style="
+                        display: flex;
+                        flex-direction: ${isMobile ? 'column' : 'row'};
+                        gap: ${isMobile ? '10px' : '15px'};
+                        align-items: center;
+                        justify-content: center;
+                        margin-bottom: ${isMobile ? '15px' : '20px'};
+                    ">
+                        <button id="repent-click-btn" style="
+                            background: #fff;
+                            color: #27ae60;
+                            border: none;
+                            padding: ${isMobile ? '15px 30px' : '20px 40px'};
+                            border-radius: ${isMobile ? '12px' : '15px'};
+                            font-size: ${isMobile ? '16px' : '20px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.1s ease;
+                            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                            ${isMobile ? 'width: 100%; max-width: 250px;' : ''}
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            🙏 КАЯТЬСЯ
+                        </button>
+                        <button id="spo-service-btn" style="
+                            background: linear-gradient(135deg, #e74c3c, #c0392b);
+                            color: #fff;
+                            border: none;
+                            padding: ${isMobile ? '12px 20px' : '15px 25px'};
+                            border-radius: ${isMobile ? '10px' : '12px'};
+                            font-size: ${isMobile ? '13px' : '16px'};
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                            ${isMobile ? 'width: 100%; max-width: 250px;' : ''}
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            🏛️ СЛУЖУ СПО!
+                        </button>
+                    </div>
+                </div>
+                <div id="click-feedback-container" style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 1;
+                "></div>
+            `;
+            
+            repentanceInterface.innerHTML = modalContent;
+            document.body.appendChild(repentanceInterface);
+            
+            const counterEl = document.getElementById('repent-counter');
+            const progressEl = document.getElementById('repent-progress');
+            const buttonEl = document.getElementById('repent-click-btn');
+            const spoButtonEl = document.getElementById('spo-service-btn');
+            const feedbackContainer = document.getElementById('click-feedback-container');
+            const clicksRequiredEl = document.getElementById('clicks-required');
+            const repentDescriptionEl = document.getElementById('repent-description');
+            
+            // Обработчик кнопки "СЛУЖУ СПО!"
+            spoButtonEl.onclick = function() {
+                if (spoServiceUsed) return; // Можно использовать только раз
+                
+                spoServiceUsed = true;
+                maxClicks = 100; // Снижаем до 100 кликов
+                
+                // Обновляем интерфейс
+                clicksRequiredEl.textContent = '100';
+                counterEl.textContent = `${clickCount} / 100`;
+                repentDescriptionEl.innerHTML = `
+                    Благодарим за службу СПО!<br>
+                    Квота снижена до <span style="color: #ffeb3b; font-weight: bold;">100 кликов</span>
+                `;
+                
+                // Убираем кнопку СПО и показываем сообщение
+                spoButtonEl.style.display = 'none';
+                
+                // Показываем уведомление
+                showServiceMessage();
+                
+                // Обновляем прогресс
+                const progress = (clickCount / maxClicks) * 100;
+                progressEl.style.width = `${progress}%`;
+                
+                // Проверяем, достаточно ли уже кликов
+                if (clickCount >= maxClicks) {
+                    setTimeout(() => {
+                        finishRepentance(repentanceInterface, oldBalance, oldInventoryCount);
+                    }, 1000);
+                }
+                
+                console.log('🏛️ Служба СПО активирована! Квота снижена с 500 до 100 кликов');
+            };
+            
+            // Обработчик клика по кнопке покаяния
+            buttonEl.onclick = function(e) {
+                if (clickCount >= maxClicks) return;
+                
+                clickCount++;
+                const progress = (clickCount / maxClicks) * 100;
+                
+                // Обновляем счётчик и прогресс
+                counterEl.textContent = `${clickCount} / ${maxClicks}`;
+                progressEl.style.width = `${progress}%`;
+                
+                // Показываем +1 эффект
+                showClickFeedback(e.clientX, e.clientY, feedbackContainer);
+                
+                // Эффект нажатия кнопки
+                buttonEl.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    buttonEl.style.transform = 'scale(1)';
+                }, 100);
+                
+                // Проверяем завершение
+                if (clickCount >= maxClicks) {
+                    setTimeout(() => {
+                        finishRepentance(repentanceInterface, oldBalance, oldInventoryCount);
+                    }, 500);
+                }
+            };
+        }
+        
+        function showServiceMessage() {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                color: #fff;
+                padding: 15px 25px;
+                border-radius: 12px;
+                font-weight: bold;
+                z-index: 10006;
+                animation: serviceSlideIn 0.5s ease-out;
+                border: 2px solid #fff;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 90vw;
+            `;
+            
+            message.innerHTML = `
+                🏛️ <strong>СЛУЖБА СПО ЗАСЧИТАНА!</strong><br>
+                <span style="font-size: 14px; color: #ffeb3b;">Квота покаяния снижена до 100 кликов!</span>
+            `;
+            
+            // Добавляем анимацию появления
+            if (!document.getElementById('service-slide-in-style')) {
+                const style = document.createElement('style');
+                style.id = 'service-slide-in-style';
+                style.textContent = `
+                    @keyframes serviceSlideIn {
+                        0% { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                        100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(message);
+            
+            // Убираем сообщение через 4 секунды
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    message.style.animation = 'serviceSlideIn 0.3s ease-out reverse';
+                    setTimeout(() => {
+                        if (document.body.contains(message)) {
+                            document.body.removeChild(message);
+                        }
+                    }, 300);
+                }
+            }, 4000);
+        }
+        
+        function showClickFeedback(x, y, container) {
+            const feedback = document.createElement('div');
+            feedback.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                color: #fff;
+                font-size: 24px;
+                font-weight: bold;
+                pointer-events: none;
+                animation: clickFadeUp 1s ease-out forwards;
+                z-index: 10;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            `;
+            feedback.textContent = '+1';
+            
+            // Добавляем анимацию если её ещё нет
+            if (!document.getElementById('click-fade-up-style')) {
+                const style = document.createElement('style');
+                style.id = 'click-fade-up-style';
+                style.textContent = `
+                    @keyframes clickFadeUp {
+                        0% {
+                            opacity: 1;
+                            transform: translate(-50%, -50%) scale(1);
+                        }
+                        100% {
+                            opacity: 0;
+                            transform: translate(-50%, -150px) scale(1.5);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            container.appendChild(feedback);
+            
+            // Удаляем элемент после анимации
+            setTimeout(() => {
+                if (container.contains(feedback)) {
+                    container.removeChild(feedback);
+                }
+            }, 1000);
+        }
+        
+        function finishRepentance(interfaceEl, oldBalance, oldInventoryCount) {
+            // Полное покаяние - обнуляем всё!
+            balance = 0;
+            inventory = []; // Полностью очищаем инвентарь (даже стартовый предмет)
+            isBlocked = false;
+            hasDebt = false;
+            debtCasesLeft = 0;
+            // hasBadCredit НЕ сбрасываем - плохой рейтинг остается навсегда!
+            
+            updateBalance();
+            updateInventory();
+            updateDebtStatus();
+            hideBlockBanner();
+            saveGameData();
+            
+            // 💡 Принудительно проверяем подсказку после покаяния (баланс = 0)
+            checkZeroBalance();
+            
+            // 💡 Также проверяем отложенную подсказку
+            checkPendingBonusHint();
+            
+            // Убираем интерфейс кликов
+            document.body.removeChild(interfaceEl);
+            
+            // Показываем сообщение о покаянии
+            showRepentanceMessage(oldBalance, oldInventoryCount);
+            
+            console.log('🙏 Покаяние совершено - всё обнулено, блокировка снята, но плохой рейтинг остался!');
+        }
+        
+        function showRepentanceMessage(lostBalance, lostItems) {
+            const repentance = document.createElement('div');
+            repentance.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #27ae60, #229954);
+                border: 3px solid #fff;
+                border-radius: 20px;
+                padding: 30px;
+                z-index: 10004;
+                text-align: center;
+                max-width: 500px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+                animation: repentGlow 2s ease-in-out infinite;
+            `;
+            
+            repentance.innerHTML = `
+                <h2 style="color: #fff; font-size: 24px; margin-bottom: 15px;">🙏 ПОКАЯНИЕ ПРИНЯТО 🙏</h2>
+                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                    Прощение получено. Баланс обнулён.<br>
+                    Инвентарь утилизирован. СПО довольно!<br>
+                    <strong style="color: #ffeb3b;">Ваш рейтинг ноль.</strong>
+                </p>
+                <div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <p style="color: #fff; font-size: 14px; margin: 0;">
+                        💸 Потеряно: ${lostBalance} ꙮ<br>
+                        📦 Утилизировано: ${lostItems} предметов
+                    </p>
+                </div>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #fff; color: #27ae60; border: none; padding: 12px 25px;
+                    border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
+                ">👍 Хорошо</button>
+            `;
+            
+            // Добавляем анимацию свечения
+            if (!document.getElementById('repent-glow-style')) {
+                const style = document.createElement('style');
+                style.id = 'repent-glow-style';
+                style.textContent = `
+                    @keyframes repentGlow {
+                        0%, 100% { 
+                            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.7);
+                        }
+                        50% { 
+                            box-shadow: 0 15px 40px rgba(39, 174, 96, 1), 0 0 50px rgba(39, 174, 96, 0.5);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(repentance);
+            
+            // НЕ убираем автоматически - только по клику на кнопку!
+        }
+        
+        function showDebtMessage(message, type) {
+            const msgEl = document.createElement('div');
+            msgEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                z-index: 10003;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            if (type === 'success') {
+                msgEl.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+            } else if (type === 'error') {
+                msgEl.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            } else {
+                msgEl.style.background = 'linear-gradient(135deg, #f39c12, #d68910)';
+            }
+            
+            msgEl.textContent = message;
+            
+            // Добавляем анимацию появления
+            if (!document.getElementById('slideIn-style')) {
+                const style = document.createElement('style');
+                style.id = 'slideIn-style';
+                style.textContent = `
+                    @keyframes slideIn {
+                        0% { transform: translateX(100%); opacity: 0; }
+                        100% { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(msgEl);
+            
+            // Убираем сообщение через 4 секунды
+            setTimeout(() => {
+                if (document.body.contains(msgEl)) {
+                    document.body.removeChild(msgEl);
+                }
+            }, 4000);
+        }
+        
+        // 💡 ФУНКЦИЯ ПРОВЕРКИ НУЛЕВОГО БАЛАНСА
+        function checkZeroBalance() {
+            console.log(`💡 Проверка баланса: ${balance} ꙮ`);
+            
+            // Проверяем: баланс = 0 И подсказка ещё не была показана И рулетка НЕ активна
+            if (balance === 0 && !bonusHintShown && !isRouletteActive()) {
+                console.log('💡 Баланс = 0 и рулетка не активна, показываем менюшку BONUS (первый раз)');
+                showBonusModal();
+            } else if (balance === 0 && !bonusHintShown && isRouletteActive()) {
+                console.log('💡 Баланс = 0, но рулетка активна - ждём её завершения');
+                // Устанавливаем флаг для показа после рулетки
+                pendingBonusHint = true;
+            }
+        }
+        
+        // 💡 ПРОВЕРЯЕМ АКТИВНА ЛИ РУЛЕТКА
+        function isRouletteActive() {
+            const rouletteSection = document.getElementById('rouletteSection');
+            return rouletteSection && rouletteSection.classList.contains('active');
+        }
+        
+        // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ РУЛЕТКИ
+        function checkPendingBonusHint() {
+            if (pendingBonusHint && balance === 0 && !bonusHintShown) {
+                console.log('💡 Рулетка завершена, показываем отложенную подсказку BONUS');
+                pendingBonusHint = false;
+                
+                // Небольшая задержка для плавности UX
+                setTimeout(() => {
+                    showBonusModal();
+                }, 1000);
+            }
+        }
+        
+        function showBonusModal() {
+            // Проверяем, нет ли уже модалки
+            if (document.getElementById('bonus-modal')) return;
+            
+            const modal = document.createElement('div');
+            modal.id = 'bonus-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10007;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
+            
+            // Определяем мобильную версию
+            const isMobile = window.innerWidth <= 768;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #f39c12, #e67e22);
+                    border: 3px solid #fff;
+                    border-radius: ${isMobile ? '15px' : '20px'};
+                    padding: ${isMobile ? '25px 20px' : '30px'};
+                    text-align: center;
+                    max-width: ${isMobile ? '320px' : '450px'};
+                    width: ${isMobile ? '90vw' : 'auto'};
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+                    animation: bonusModalPulse 2s ease-in-out infinite;
+                ">
+                    <h2 style="color: #fff; font-size: ${isMobile ? '20px' : '24px'}; margin-bottom: ${isMobile ? '15px' : '20px'}; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+                        💡 НЕТ ДЕНЕГ? 💡
+                    </h2>
+                    <p style="color: #fff; font-size: ${isMobile ? '16px' : '18px'}; margin-bottom: ${isMobile ? '20px' : '25px'}; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                        Не расстраивайся!<br>
+                        У нас есть <strong style="color: #ffeb3b;">бесплатный промокод</strong> для тебя!
+                    </p>
+                    <div style="
+                        background: rgba(255,255,255,0.2);
+                        border-radius: ${isMobile ? '10px' : '12px'};
+                        padding: ${isMobile ? '15px' : '20px'};
+                        margin-bottom: ${isMobile ? '20px' : '25px'};
+                        border: 1px solid rgba(255,255,255,0.3);
+                    ">
+                        <p style="color: #fff; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: 10px;">
+                            Введи промокод в настройках профиля:
+                        </p>
+                        <div style="
+                            background: rgba(0,0,0,0.3);
+                            border-radius: 8px;
+                            padding: 10px;
+                            border: 1px solid rgba(255,255,255,0.2);
+                        ">
+                            <div style="color: #ffeb3b; font-size: ${isMobile ? '18px' : '22px'}; font-weight: bold; text-shadow: 0 0 10px #ffeb3b;">
+                                BONUS
+                            </div>
+                            <div style="color: #fff; font-size: ${isMobile ? '12px' : '14px'}; margin-top: 5px;">
+                                +200 ꙮ на баланс!
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="closeBonusModal()" style="
+                        background: #fff;
+                        color: #f39c12;
+                        border: none;
+                        padding: ${isMobile ? '12px 25px' : '15px 30px'};
+                        border-radius: ${isMobile ? '10px' : '12px'};
+                        font-size: ${isMobile ? '16px' : '18px'};
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                        ${isMobile ? 'width: 100%; max-width: 200px;' : ''}
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        👍 ПОНЯЛ!
+                    </button>
+                </div>
+            `;
+            
+            // Добавляем анимацию пульсации
+            if (!document.getElementById('bonus-modal-pulse-style')) {
+                const style = document.createElement('style');
+                style.id = 'bonus-modal-pulse-style';
+                style.textContent = `
+                    @keyframes bonusModalPulse {
+                        0%, 100% { 
+                            transform: scale(1);
+                            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.7);
+                        }
+                        50% { 
+                            transform: scale(1.02);
+                            box-shadow: 0 15px 40px rgba(243, 156, 18, 1), 0 0 50px rgba(243, 156, 18, 0.5);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(modal);
+            
+            console.log('💡 Показана менюшка с промокодом BONUS');
+        }
+        
+        function closeBonusModal() {
+            const modal = document.getElementById('bonus-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+                bonusHintShown = true; // Помечаем что показали
+                saveGameData(); // Сохраняем флаг
+                console.log('💡 Менюшка BONUS закрыта, больше не показываем');
+            }
+        }
+        
         // Эта функция больше не нужна, но оставляем для совместимости
         function showMisclickPenalty() {
             console.log('🚫 Функция штрафа отключена - рулетка теперь полностью заблокирована');
@@ -2751,6 +3904,10 @@
             }
         }
 
+        // 💡 ФЛАГИ ПОКАЗА ПОДСКАЗКИ BONUS
+        let bonusHintShown = false; // Показывалась ли уже подсказка BONUS
+        let pendingBonusHint = false; // Ожидает ли подсказка завершения рулетки
+        
         // LocalStorage functions
         function saveGameData() {
             const gameData = {
@@ -2759,7 +3916,13 @@
                 nickname: userNickname,
                 avatar: userAvatar,
                 winglistItems: winglistItems,
-                usedPromocodes: usedPromocodes
+                usedPromocodes: usedPromocodes,
+                hasDebt: hasDebt,
+                debtCasesLeft: debtCasesLeft,
+                isBlocked: isBlocked,
+                hasBadCredit: hasBadCredit,
+                bonusHintShown: bonusHintShown, // Сохраняем флаг показа подсказки
+                pendingBonusHint: pendingBonusHint // Сохраняем флаг отложенной подсказки
             };
             localStorage.setItem('caseOpenerGameData', JSON.stringify(gameData));
         }
@@ -2777,6 +3940,12 @@
                     userAvatar = gameData.avatar || null;
                     winglistItems = gameData.winglistItems || [];
                     usedPromocodes = gameData.usedPromocodes || [];
+                    hasDebt = gameData.hasDebt || false;
+                    debtCasesLeft = gameData.debtCasesLeft || 0;
+                    isBlocked = gameData.isBlocked || false;
+                    hasBadCredit = gameData.hasBadCredit || false;
+                    bonusHintShown = gameData.bonusHintShown || false; // Загружаем флаг показа подсказки
+                    pendingBonusHint = gameData.pendingBonusHint || false; // Загружаем флаг отложенной подсказки
                 } catch (e) {
                     console.log('Ошибка загрузки данных, используем значения по умолчанию');
                 }
@@ -2907,6 +4076,10 @@
         // Улучшенная система звуков
         let rollSound = null;
         let dropSound = null;
+        let rareDropSound = null;
+        let epicDropSound = null;
+        let legendaryDropSound = null;
+        let expensiveDropSound = null;
 
         // Sound effect for roulette
         function playRouletteSound() {
@@ -2954,12 +4127,12 @@
             
             dropSound.oncanplaythrough = () => {
                 dropSound.play().catch(() => {
-                    playGeneratedDropSound();
+                    console.log('🎵 Кастомный звук drop_sound.mp3 не найден');
                 });
             };
             
             dropSound.onerror = () => {
-                playGeneratedDropSound();
+                console.log('🎵 drop_sound.mp3 не найден');
             };
             
             dropSound.src = 'drop_sound.mp3';
@@ -2992,32 +4165,147 @@
             }
         }
 
-        // Сгенерированный звук выпадения дропа
-        function playGeneratedDropSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Создаем короткий "плинк" звук
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // Звук выпадения - быстрый переход от высокой к низкой частоте
-                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
-                oscillator.type = 'triangle';
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.3);
-            } catch (e) {
-                console.log('Не удалось воспроизвести звук дропа:', e);
+        // 🎵 СИСТЕМА ЗВУКОВ ДЛЯ РЕДКИХ ДРОПОВ
+        function playDropSoundByRarity(item) {
+            const value = item.value;
+            const rarity = item.rarity;
+            
+            console.log(`🎵 Проверяем звук для дропа: ${item.name} (${rarity}, ${value} ꙮ)`);
+            
+            // Определяем приоритет звуков:
+            // 1. Легендарный дроп (legendary)
+            // 2. Очень дорогой дроп (500+ ꙮ)
+            // 3. Эпический дроп (epic)
+            // 4. Дорогой дроп (200+ ꙮ)
+            // 5. Редкий дроп (rare)
+            // 6. Обычный звук дропа
+            
+            if (rarity === 'legendary') {
+                playLegendaryDropSound();
+            } else if (value >= 500) {
+                playExpensiveDropSound();
+            } else if (rarity === 'epic') {
+                playEpicDropSound();
+            } else if (value >= 200) {
+                playExpensiveDropSound();
+            } else if (rarity === 'rare') {
+                playRareDropSound();
+            } else {
+                playDropSound(); // Обычный звук для common дропов
             }
         }
+        
+        // 🎵 ЗВУК ДЛЯ РЕДКИХ ДРОПОВ (RARE)
+        function playRareDropSound() {
+            if (!rareDropSound) {
+                rareDropSound = new Audio();
+                rareDropSound.volume = 0.7;
+            }
+            
+            // Останавливаем звук рулетки
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            rareDropSound.oncanplaythrough = () => {
+                rareDropSound.play().catch(() => {
+                    console.log('🎵 Кастомный звук rare_drop.mp3 не найден');
+                });
+            };
+            
+            rareDropSound.onerror = () => {
+                console.log('🎵 rare_drop.mp3 не найден');
+            };
+            
+            console.log('🎵 Пытаемся загрузить rare_drop.mp3...');
+            rareDropSound.src = 'rare_drop.mp3';
+        }
+        
+        // 🎵 ЗВУК ДЛЯ ЭПИЧЕСКИХ ДРОПОВ (EPIC)
+        function playEpicDropSound() {
+            if (!epicDropSound) {
+                epicDropSound = new Audio();
+                epicDropSound.volume = 0.8;
+            }
+            
+            // Останавливаем звук рулетки
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            epicDropSound.oncanplaythrough = () => {
+                epicDropSound.play().catch(() => {
+                    console.log('🎵 Кастомный звук epic_drop.mp3 не найден');
+                });
+            };
+            
+            epicDropSound.onerror = () => {
+                console.log('🎵 epic_drop.mp3 не найден');
+            };
+            
+            console.log('🎵 Пытаемся загрузить epic_drop.mp3...');
+            epicDropSound.src = 'epic_drop.mp3';
+        }
+        
+        // 🎵 ЗВУК ДЛЯ ЛЕГЕНДАРНЫХ ДРОПОВ (LEGENDARY)
+        function playLegendaryDropSound() {
+            if (!legendaryDropSound) {
+                legendaryDropSound = new Audio();
+                legendaryDropSound.volume = 0.9;
+            }
+            
+            // Останавливаем звук рулетки
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            legendaryDropSound.oncanplaythrough = () => {
+                legendaryDropSound.play().catch(() => {
+                    console.log('🎵 Кастомный звук legendary_drop.mp3 не найден');
+                });
+            };
+            
+            legendaryDropSound.onerror = () => {
+                console.log('🎵 legendary_drop.mp3 не найден');
+            };
+            
+            console.log('🎵 Пытаемся загрузить legendary_drop.mp3...');
+            legendaryDropSound.src = 'legendary_drop.mp3';
+        }
+        
+        // 🎵 ЗВУК ДЛЯ ДОРОГИХ ДРОПОВ (200+ ꙮ)
+        function playExpensiveDropSound() {
+            if (!expensiveDropSound) {
+                expensiveDropSound = new Audio();
+                expensiveDropSound.volume = 0.75;
+            }
+            
+            // Останавливаем звук рулетки
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            expensiveDropSound.oncanplaythrough = () => {
+                expensiveDropSound.play().catch(() => {
+                    console.log('🎵 Кастомный звук expensive_drop.mp3 не найден');
+                });
+            };
+            
+            expensiveDropSound.onerror = () => {
+                console.log('🎵 expensive_drop.mp3 не найден');
+            };
+            
+            console.log('🎵 Пытаемся загрузить expensive_drop.mp3...');
+            expensiveDropSound.src = 'expensive_drop.mp3';
+        }
+        
+
+
+
 
         // Add event listeners to cases
         document.querySelectorAll('.case').forEach(caseEl => {
@@ -3098,7 +4386,7 @@
                 avatarImg.onerror = () => {
                     // Оставляем дефолтный аватар
                     avatarEl.style.backgroundImage = 'none';
-                    avatarEl.textContent = '👤';
+                    avatarEl.textContent = '🐵';
                     console.log('📷 Используется дефолтный аватар');
                 };
                 
@@ -3110,10 +4398,19 @@
         loadGameData();
         updateBalance();
         updateInventory();
+        updateDebtStatus();
         initializeCaseImages();
         updateWinglist();
         updateCountdown();
         loadAvatar();
+        
+        // Проверяем блокировку при загрузке
+        if (isBlocked) {
+            showBlockBanner();
+        }
+        
+        // 💡 ВАЖНО: Проверяем нулевой баланс при загрузке страницы
+        checkZeroBalance();
     </script>
 </body>
 </html>
