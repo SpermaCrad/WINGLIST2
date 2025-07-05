@@ -1333,6 +1333,10 @@
         let userAvatar = null; // Хранит base64 данные аватара
         let balanceClickCount = 0;
         let balanceClickTimer = null;
+        
+        // Защита от мискликов
+        let rouletteProtection = false; // Флаг защиты рулетки
+        let caseCooldowns = {}; // Кулдауны для кейсов
 
         // Загрузка ТВОИХ изображений дропов
         function loadDropImage(imageElement, imageName) {
@@ -1763,6 +1767,20 @@
         }
 
         function openCase(caseType, price) {
+            // 🛡️ ЗАЩИТА ОТ КУЛДАУНА
+            const now = Date.now();
+            if (caseCooldowns[caseType] && now - caseCooldowns[caseType] < 2000) {
+                console.log(`⏰ Кейс ${caseType} на кулдауне!`);
+                const caseElement = document.querySelector(`[data-case="${caseType}"]`);
+                if (caseElement) {
+                    caseElement.style.opacity = '0.5';
+                    setTimeout(() => {
+                        caseElement.style.opacity = '1';
+                    }, 300);
+                }
+                return;
+            }
+            
             if (balance < price) {
                 // Только визуальная обратная связь - NO ROULETTE
                 playErrorSound(); // Теперь только console.log
@@ -1777,9 +1795,20 @@
                 return;
             }
 
+            // 🛡️ УСТАНАВЛИВАЕМ КУЛДАУН
+            caseCooldowns[caseType] = now;
+            console.log(`🔒 Кейс ${caseType} заблокирован на 2 секунды`);
+
             // Only proceed with roulette if balance is sufficient
             balance -= price;
             updateBalance();
+            
+            // 🛡️ ВКЛЮЧАЕМ ЗАЩИТУ РУЛЕТКИ
+            rouletteProtection = true;
+            console.log('🔒 РУЛЕТКА ПОЛНОСТЬЮ ЗАБЛОКИРОВАНА! Выход только после получения дропа!');
+            
+            // 🚫 БЛОКИРУЕМ ESC И ДРУГИЕ СПОСОБЫ ЗАКРЫТИЯ
+            blockRouletteEscape();
 
             const rouletteSection = document.getElementById('rouletteSection');
             const rouletteStrip = document.getElementById('rouletteStrip');
@@ -1898,6 +1927,11 @@
                     // Звуки отключены
                     const winningItem = rouletteItems[stopIndex % rouletteItems.length];
                     showResult(winningItem);
+                    
+                    // 🛡️ ОТКЛЮЧАЕМ ЗАЩИТУ ПОСЛЕ ПОКАЗА РЕЗУЛЬТАТА
+                    rouletteProtection = false;
+                    unblockRouletteEscape();
+                    console.log('🎯 Результат показан - защита отключена, можно выбирать действие');
                 }, 5200); // Показываем результат через 5.2 секунды
             }, 300);
         }
@@ -1952,6 +1986,11 @@
             document.getElementById('rouletteSection').classList.remove('active');
             document.getElementById('resultItemImage').classList.remove('animate');
             
+            // 🛡️ ОТКЛЮЧАЕМ ЗАЩИТУ РУЛЕТКИ
+            rouletteProtection = false;
+            unblockRouletteEscape();
+            console.log('🔓 Защита рулетки ОТКЛЮЧЕНА - можно нормально кликать по сайту');
+            
             // Останавливаем все звуки
             if (rollSound && !rollSound.paused) {
                 rollSound.pause();
@@ -1978,10 +2017,18 @@
             currentItem = null;
         }
 
-        // Close roulette on background click
+        // 🛡️ ЗАБЛОКИРОВАННОЕ ЗАКРЫТИЕ РУЛЕТКИ
         document.getElementById('rouletteSection').addEventListener('click', function(e) {
+            // НИКАКИХ ЗАКРЫТИЙ ДО ПОЛУЧЕНИЯ ДРОПА!
             if (e.target === this) {
-                hideResult();
+                if (rouletteProtection && currentItem === null) {
+                    // Рулетка заблокирована - ничего не делаем!
+                    console.log('🔒 Рулетка заблокирована! Ждите результата!');
+                    return false; // Блокируем любые действия
+                } else if (currentItem !== null) {
+                    // Можно закрыть только ПОСЛЕ получения дропа
+                    hideResult();
+                }
             }
         });
 
@@ -2570,6 +2617,95 @@
             customScream.src = 'scream.mp3'; // User should add this file
         }
 
+        // 🔒 БЛОКИРОВКА ВСЕХ СПОСОБОВ ЗАКРЫТЬ РУЛЕТКУ
+        let escapeBlocker = null;
+        
+        function blockRouletteEscape() {
+            // Блокируем ESC и другие клавиши
+            escapeBlocker = function(e) {
+                if (rouletteProtection && currentItem === null) {
+                    // Блокируем ESC, Enter, Space, и другие клавиши закрытия
+                    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' || e.key === 'Backspace') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🚫 Клавиша заблокирована! Ждите результата рулетки!');
+                        showBlockedMessage();
+                        return false;
+                    }
+                }
+            };
+            
+            // Добавляем слушатель клавиш
+            document.addEventListener('keydown', escapeBlocker, true);
+            document.addEventListener('keyup', escapeBlocker, true);
+            
+            console.log('🔒 Все способы выхода заблокированы!');
+        }
+        
+        function unblockRouletteEscape() {
+            // Убираем блокировку клавиш
+            if (escapeBlocker) {
+                document.removeEventListener('keydown', escapeBlocker, true);
+                document.removeEventListener('keyup', escapeBlocker, true);
+                escapeBlocker = null;
+            }
+            
+            console.log('🔓 Блокировка снята, можно закрыть рулетку');
+        }
+        
+        function showBlockedMessage() {
+            // Показываем короткое уведомление о блокировке
+            const existingMessage = document.getElementById('roulette-blocked-message');
+            if (existingMessage) return; // Уже показано
+            
+            const message = document.createElement('div');
+            message.id = 'roulette-blocked-message';
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(231, 76, 60, 0.9);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: bold;
+                z-index: 10005;
+                animation: blockPulse 0.5s ease-in-out;
+                border: 2px solid #fff;
+            `;
+            
+            message.textContent = '🔒 Рулетка заблокирована! Ждите результата!';
+            
+            // Добавляем анимацию пульсации
+            if (!document.getElementById('block-pulse-style')) {
+                const style = document.createElement('style');
+                style.id = 'block-pulse-style';
+                style.textContent = `
+                    @keyframes blockPulse {
+                        0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+                        50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(message);
+            
+            // Убираем сообщение через 2 секунды
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 2000);
+        }
+        
+        // Эта функция больше не нужна, но оставляем для совместимости
+        function showMisclickPenalty() {
+            console.log('🚫 Функция штрафа отключена - рулетка теперь полностью заблокирована');
+        }
+
         // Fallback generated scream sound
         function playGeneratedScream() {
             try {
@@ -2891,6 +3027,22 @@
             caseEl.addEventListener('click', () => {
                 const caseType = caseEl.dataset.case;
                 const price = parseInt(caseEl.dataset.price);
+                
+                // 🛡️ ПРОВЕРЯЕМ КУЛДАУН ПЕРЕД ВЫЗОВОМ
+                const now = Date.now();
+                if (caseCooldowns[caseType] && now - caseCooldowns[caseType] < 2000) {
+                    const remainingTime = Math.ceil((2000 - (now - caseCooldowns[caseType])) / 1000);
+                    console.log(`⏰ Кейс на кулдауне! Осталось: ${remainingTime}с`);
+                    
+                    // Визуальная обратная связь
+                    caseEl.style.transform = 'scale(0.95)';
+                    caseEl.style.opacity = '0.6';
+                    setTimeout(() => {
+                        caseEl.style.transform = '';
+                        caseEl.style.opacity = '';
+                    }, 200);
+                    return;
+                }
                 
                 // Always allow clicks, handle insufficient funds in openCase
                 openCase(caseType, price);
