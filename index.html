@@ -467,6 +467,63 @@
             box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
             border-color: #c0392b;
         }
+        
+        /* 💡 СТИЛИ ДЛЯ ВСПЛЫВАЮЩИХ ПОДСКАЗОК КЕЙСОВ */
+        .case-tooltip {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border: 2px solid #e74c3c;
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .case:hover .case-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-100%) translateY(-5px);
+        }
+        
+        .case-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid #e74c3c;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+        }
+        
+        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ ПОДСКАЗОК */
+        @media (max-width: 768px) {
+            .case-tooltip {
+                font-size: 10px;
+                padding: 10px;
+                min-width: 160px;
+                line-height: 1.3;
+            }
+            
+            .case-tooltip::after {
+                border-top: 6px solid #e74c3c;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                margin-left: -6px;
+            }
+        }
 
         .case.disabled {
             opacity: 0.6;
@@ -612,10 +669,16 @@
             flex-shrink: 0;
         }
 
-        .roulette-item.common { background: linear-gradient(145deg, #95a5a6, #7f8c8d); }
-        .roulette-item.rare { background: linear-gradient(145deg, #3498db, #2980b9); }
-        .roulette-item.epic { background: linear-gradient(145deg, #9b59b6, #8e44ad); }
-        .roulette-item.legendary { background: linear-gradient(145deg, #f39c12, #d68910); }
+        .roulette-item.loss { background: linear-gradient(145deg, #e74c3c, #c0392b); }      /* 🔴 Убыточные */
+        .roulette-item.breakeven { background: linear-gradient(145deg, #f1c40f, #f39c12); } /* 🟡 Окупаемые */
+        .roulette-item.profit { background: linear-gradient(145deg, #27ae60, #229954); }   /* 🟢 Прибыльные */
+        .roulette-item.jackpot { background: linear-gradient(145deg, #8e44ad, #732d91); }  /* 💎 Джекпоты */
+        
+        /* Старые цвета для совместимости */
+        .roulette-item.common { background: linear-gradient(145deg, #e74c3c, #c0392b); }
+        .roulette-item.rare { background: linear-gradient(145deg, #f1c40f, #f39c12); }
+        .roulette-item.epic { background: linear-gradient(145deg, #27ae60, #229954); }
+        .roulette-item.legendary { background: linear-gradient(145deg, #8e44ad, #732d91); }
 
         .roulette-pointer {
             position: absolute;
@@ -1202,6 +1265,28 @@
         </div>
 
         <div class="cases-title">СЕРИЙНЫЕ КЕЙСЫ</div>
+        <!-- 🖥️ ПОДСКАЗКА ДЛЯ КОМПЬЮТЕРА -->
+        <div style="
+            text-align: center;
+            color: #95a5a6;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        " id="desktop-hint">
+            💡 <strong>Клик</strong> - открыть кейс • <strong>Наведение</strong> - шансы • <strong>ПКМ</strong> - все дропы
+        </div>
+        
+        <!-- 📱 ПОДСКАЗКА ДЛЯ МОБИЛЬНЫХ -->
+        <div style="
+            text-align: center;
+            color: #95a5a6;
+            font-size: 12px;
+            margin-bottom: 15px;
+            line-height: 1.3;
+            display: none;
+        " id="mobile-hint">
+            📱 <strong>Тап</strong> - открыть кейс • <strong>Удержание</strong> - посмотреть дропы
+        </div>
         <div class="cases-section">
             <div class="case" data-case="1" data-price="120">
                 <div class="case-image" data-case-num="1"></div>
@@ -1403,6 +1488,7 @@
     <script>
         let balance = 1000;
         let currentItem = null;
+        let currentCasePrice = 120; // 🎨 Переменная для хранения цены текущего открываемого кейса
         let inventory = [
             { name: 'Стартовый инструмент', image: 'dropcase1_1', rarity: 'common', value: 10 }
         ];
@@ -1463,248 +1549,348 @@
 
         // Никаких ассетов - только простые файлы!
 
-        // СБАЛАНСИРОВАННАЯ ЭКОНОМИКА: шанс окупиться ~50% для всех кейсов
-        // ПРАВИЛО: половина дропов ниже цены кейса, половина выше
+        // 🎰 СБАЛАНСИРОВАННАЯ ЭКОНОМИКА - МЕНЬШЕ КРАСНЫХ, БОЛЬШЕ ОКУПА!
+        // Каждый дроп имеет реальный процент шанса выпадения
         const items = {
-            1: [ // Кейс 120 ꙮ - дропы от 50 до 200 ꙮ (50/50 шанс окупа)
-                { name: 'Хуюнтик Камень', image: 'dropcase1_3', rarity: 'common', value: 50, weight: 25 },
-                { name: 'Хуюнтик Палка', image: 'dropcase1_2', rarity: 'common', value: 70, weight: 25 },
-                { name: 'Хуюнтик Верёвка', image: 'dropcase1_4', rarity: 'common', value: 90, weight: 20 },
-                { name: 'Хуюнтик Нож', image: 'dropcase1_1', rarity: 'common', value: 110, weight: 20 },
-                { name: 'Хуюнтик Лук', image: 'dropcase1_8', rarity: 'common', value: 130, weight: 10 },
-                { name: 'Хуюнтик Броня', image: 'dropcase1_6', rarity: 'rare', value: 150, weight: 8 },
-                { name: 'Хуюнтик Меч', image: 'dropcase1_7', rarity: 'rare', value: 170, weight: 6 },
-                { name: 'Хуюнтик Щит', image: 'dropcase1_5', rarity: 'rare', value: 190, weight: 4 },
-                { name: 'Хуюнтик Артефакт', image: 'dropcase1_10', rarity: 'epic', value: 210, weight: 2 },
-                { name: 'Хуюнтик Зелье', image: 'dropcase1_9', rarity: 'epic', value: 240, weight: 1 }
+            1: [ // Кейс "Хуюнтик" 120 ꙮ - УНИКАЛЬНЫЕ РАЗНООБРАЗНЫЕ ДРОПЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (45% общий шанс) - СНИЖЕНО с 70%!
+                { name: 'Хуюнтик Камушек', image: 'dropcase1_3', rarity: 'common', value: 30, chance: 20 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Палочка', image: 'dropcase1_2', rarity: 'common', value: 60, chance: 15 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Шнурок', image: 'dropcase1_4', rarity: 'common', value: 100, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (35% общий шанс) - УВЕЛИЧЕНО с 20%!
+                { name: 'Хуюнтик Резак', image: 'dropcase1_1', rarity: 'rare', value: 140, chance: 20 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Арбалет', image: 'dropcase1_8', rarity: 'rare', value: 180, chance: 15 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Хуюнтик Доспехи', image: 'dropcase1_6', rarity: 'epic', value: 250, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Сабля', image: 'dropcase1_7', rarity: 'epic', value: 300, chance: 6 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Бронешит', image: 'dropcase1_5', rarity: 'epic', value: 400, chance: 3 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Хуюнтик Реликвия', image: 'dropcase1_10', rarity: 'legendary', value: 600, chance: 0.8 }, // ЛЕГЕНДАРНЫЙ ДРОП
+                { name: 'Хуюнтик Эликсир Силы', image: 'dropcase1_9', rarity: 'legendary', value: 1000, chance: 0.2 } // ЛЕГЕНДАРНЫЙ ДРОП
             ],
-            2: [ // Кейс 200 ꙮ - дропы от 80 до 350 ꙮ (50/50 шанс окупа)
-                { name: 'Кизик Клинок', image: 'dropcase2_1', rarity: 'common', value: 80, weight: 25 },
-                { name: 'Кизик Щит', image: 'dropcase2_2', rarity: 'common', value: 120, weight: 25 },
-                { name: 'Кизик Зелье', image: 'dropcase2_3', rarity: 'common', value: 160, weight: 20 },
-                { name: 'Кизик Амулет', image: 'dropcase2_6', rarity: 'common', value: 180, weight: 20 },
-                { name: 'Кизик Перчатки', image: 'dropcase2_9', rarity: 'rare', value: 220, weight: 10 },
-                { name: 'Кизик Посох', image: 'dropcase2_7', rarity: 'rare', value: 250, weight: 8 },
-                { name: 'Кизик Кольцо', image: 'dropcase2_4', rarity: 'rare', value: 280, weight: 6 },
-                { name: 'Кизик Сапоги', image: 'dropcase2_10', rarity: 'rare', value: 310, weight: 4 },
-                { name: 'Кизик Монета', image: 'dropcase2_5', rarity: 'epic', value: 340, weight: 2 },
-                { name: 'Кизик Корона', image: 'dropcase2_8', rarity: 'epic', value: 380, weight: 1 }
+            2: [ // Кейс "Кизик" 200 ꙮ - УНИКАЛЬНЫЕ РАЗНООБРАЗНЫЕ ДРОПЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (40% общий шанс) - СНИЖЕНО с 65%!
+                { name: 'Кизик Стилет', image: 'dropcase2_1', rarity: 'common', value: 50, chance: 18 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Баклер', image: 'dropcase2_2', rarity: 'common', value: 120, chance: 12 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Отвар', image: 'dropcase2_3', rarity: 'common', value: 180, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (40% общий шанс) - УВЕЛИЧЕНО с 25%!
+                { name: 'Кизик Талисман', image: 'dropcase2_6', rarity: 'rare', value: 240, chance: 22 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Наручи', image: 'dropcase2_9', rarity: 'rare', value: 300, chance: 18 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Кизик Жезл', image: 'dropcase2_7', rarity: 'epic', value: 450, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Печать', image: 'dropcase2_4', rarity: 'epic', value: 600, chance: 6 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Ботинки', image: 'dropcase2_10', rarity: 'epic', value: 800, chance: 3 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Кизик Древняя Монета', image: 'dropcase2_5', rarity: 'legendary', value: 1200, chance: 0.8 }, // ЛЕГЕНДАРНЫЙ ДРОП
+                { name: 'Кизик Диадема', image: 'dropcase2_8', rarity: 'legendary', value: 2000, chance: 0.2 } // ЛЕГЕНДАРНЫЙ ДРОП
             ],
-            3: [ // Кейс 150 ꙮ - дропы от 60 до 280 ꙮ (50/50 шанс окупа)
-                { name: 'Жало Яд', image: 'dropcase3_3', rarity: 'common', value: 60, weight: 25 },
-                { name: 'Жало Дротик', image: 'dropcase3_6', rarity: 'common', value: 100, weight: 25 },
-                { name: 'Жало Шип', image: 'dropcase3_8', rarity: 'common', value: 130, weight: 20 },
-                { name: 'Жало Стрела', image: 'dropcase3_7', rarity: 'common', value: 140, weight: 20 },
-                { name: 'Жало Кольчуга', image: 'dropcase3_2', rarity: 'rare', value: 170, weight: 10 },
-                { name: 'Жало Клинок', image: 'dropcase3_1', rarity: 'rare', value: 200, weight: 8 },
-                { name: 'Жало Мастера', image: 'dropcase3_10', rarity: 'rare', value: 230, weight: 6 },
-                { name: 'Жало Лук', image: 'dropcase3_4', rarity: 'rare', value: 250, weight: 4 },
-                { name: 'Жало Сапфир', image: 'dropcase3_5', rarity: 'epic', value: 270, weight: 2 },
-                { name: 'Жало Легендарное', image: 'dropcase3_9', rarity: 'epic', value: 300, weight: 1 }
+            3: [ // Кейс "Жало" 150 ꙮ - УНИКАЛЬНЫЕ РАЗНООБРАЗНЫЕ ДРОПЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (42% общий шанс) - СНИЖЕНО с 70%!
+                { name: 'Жало Токсин', image: 'dropcase3_3', rarity: 'common', value: 40, chance: 19 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Метательный Нож', image: 'dropcase3_6', rarity: 'common', value: 80, chance: 13 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Колючка', image: 'dropcase3_8', rarity: 'common', value: 130, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (38% общий шанс) - УВЕЛИЧЕНО с 20%!
+                { name: 'Жало Болт', image: 'dropcase3_7', rarity: 'rare', value: 180, chance: 21 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Кираса', image: 'dropcase3_2', rarity: 'rare', value: 220, chance: 17 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Жало Кортик', image: 'dropcase3_1', rarity: 'epic', value: 350, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Артефакт Убийцы', image: 'dropcase3_10', rarity: 'epic', value: 450, chance: 6 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Композитный Лук', image: 'dropcase3_4', rarity: 'epic', value: 600, chance: 3 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Жало Кристалл Сапфира', image: 'dropcase3_5', rarity: 'legendary', value: 900, chance: 0.8 }, // ЛЕГЕНДАРНЫЙ ДРОП
+                { name: 'Жало Реликвия Древних', image: 'dropcase3_9', rarity: 'legendary', value: 1500, chance: 0.2 } // ЛЕГЕНДАРНЫЙ ДРОП
             ],
-            4: [ // Кейс 300 ꙮ - дропы от 120 до 550 ꙮ (50/50 шанс окупа)
-                { name: 'Шер Эликсир', image: 'dropcase4_3', rarity: 'common', value: 120, weight: 25 },
-                { name: 'Шер Кинжал', image: 'dropcase4_6', rarity: 'common', value: 180, weight: 25 },
-                { name: 'Шер Секира', image: 'dropcase4_9', rarity: 'common', value: 240, weight: 20 },
-                { name: 'Шер Щит', image: 'dropcase4_2', rarity: 'common', value: 270, weight: 20 },
-                { name: 'Шер Меч', image: 'dropcase4_1', rarity: 'rare', value: 330, weight: 10 },
-                { name: 'Шер Булава', image: 'dropcase4_7', rarity: 'rare', value: 380, weight: 8 },
-                { name: 'Шер Алебарда', image: 'dropcase4_10', rarity: 'rare', value: 430, weight: 6 },
-                { name: 'Шер Лук', image: 'dropcase4_4', rarity: 'rare', value: 480, weight: 4 },
-                { name: 'Шер Рубин', image: 'dropcase4_5', rarity: 'epic', value: 520, weight: 2 },
-                { name: 'Шер Легендарный', image: 'dropcase4_8', rarity: 'epic', value: 580, weight: 1 }
+            4: [ // Кейс "Шер" 300 ꙮ - УНИКАЛЬНЫЕ РАЗНООБРАЗНЫЕ ДРОПЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (38% общий шанс) - СНИЖЕНО с 65%!
+                { name: 'Шер Настойка', image: 'dropcase4_3', rarity: 'common', value: 80, chance: 16 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Стилет', image: 'dropcase4_6', rarity: 'common', value: 180, chance: 12 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Топор', image: 'dropcase4_9', rarity: 'common', value: 280, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (42% общий шанс) - УВЕЛИЧЕНО с 25%!
+                { name: 'Шер Башер', image: 'dropcase4_2', rarity: 'rare', value: 380, chance: 24 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Клеймор', image: 'dropcase4_1', rarity: 'rare', value: 480, chance: 18 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Шер Морningstar', image: 'dropcase4_7', rarity: 'epic', value: 700, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Глефа', image: 'dropcase4_10', rarity: 'epic', value: 900, chance: 6 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Элвенский Лук', image: 'dropcase4_4', rarity: 'epic', value: 1200, chance: 3 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Шер Кровавый Рубин', image: 'dropcase4_5', rarity: 'legendary', value: 1800, chance: 0.8 }, // ЛЕГЕНДАРНЫЙ ДРОП
+                { name: 'Шер Корона Властелина', image: 'dropcase4_8', rarity: 'legendary', value: 3000, chance: 0.2 } // ЛЕГЕНДАРНЫЙ ДРОП
             ],
-            5: [ // Кейс 130 ꙮ - дропы от 55 до 250 ꙮ (50/50 шанс окупа)
-                { name: 'Глист Эликсир', image: 'dropcase5_3', rarity: 'common', value: 55, weight: 25 },
-                { name: 'Глист Червь', image: 'dropcase5_6', rarity: 'common', value: 80, weight: 25 },
-                { name: 'Глист Личинка', image: 'dropcase5_7', rarity: 'common', value: 105, weight: 20 },
-                { name: 'Глист Кокон', image: 'dropcase5_8', rarity: 'common', value: 120, weight: 20 },
-                { name: 'Глист Мутант', image: 'dropcase5_10', rarity: 'rare', value: 150, weight: 10 },
-                { name: 'Глист Броня', image: 'dropcase5_2', rarity: 'rare', value: 175, weight: 8 },
-                { name: 'Глист Клинок', image: 'dropcase5_1', rarity: 'rare', value: 200, weight: 6 },
-                { name: 'Глист Лук', image: 'dropcase5_4', rarity: 'rare', value: 220, weight: 4 },
-                { name: 'Глист Королева', image: 'dropcase5_9', rarity: 'epic', value: 240, weight: 2 },
-                { name: 'Глист Алмаз', image: 'dropcase5_5', rarity: 'epic', value: 270, weight: 1 }
+            5: [ // Кейс "Глист" 130 ꙮ - УНИКАЛЬНЫЕ РАЗНООБРАЗНЫЕ ДРОПЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (44% общий шанс) - СНИЖЕНО с 70%!
+                { name: 'Глист Экстракт', image: 'dropcase5_3', rarity: 'common', value: 35, chance: 20 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Паразит', image: 'dropcase5_6', rarity: 'common', value: 70, chance: 14 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Куколка', image: 'dropcase5_7', rarity: 'common', value: 110, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (36% общий шанс) - УВЕЛИЧЕНО с 20%!
+                { name: 'Глист Капсула', image: 'dropcase5_8', rarity: 'rare', value: 160, chance: 20 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Химера', image: 'dropcase5_10', rarity: 'rare', value: 200, chance: 16 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Глист Хитиновая Броня', image: 'dropcase5_2', rarity: 'epic', value: 300, chance: 10 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Биооружие', image: 'dropcase5_1', rarity: 'epic', value: 400, chance: 6 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Органический Лук', image: 'dropcase5_4', rarity: 'epic', value: 550, chance: 3 }, // УНИКАЛЬНОЕ НАЗВАНИЕ
+                { name: 'Глист Матка Роя', image: 'dropcase5_9', rarity: 'legendary', value: 800, chance: 0.8 }, // ЛЕГЕНДАРНЫЙ ДРОП
+                { name: 'Глист Кристалл Жизни', image: 'dropcase5_5', rarity: 'legendary', value: 1300, chance: 0.2 } // ЛЕГЕНДАРНЫЙ ДРОП
             ],
-            6: [ // Кейс 100 ꙮ - дропы от 40 до 190 ꙮ (50/50 шанс окупа)
-                { name: 'Меофен Порошок', image: 'dropcase6_8', rarity: 'common', value: 40, weight: 25 },
-                { name: 'Меофен Таблетка', image: 'dropcase6_6', rarity: 'common', value: 65, weight: 25 },
-                { name: 'Меофен Зелье', image: 'dropcase6_3', rarity: 'common', value: 85, weight: 20 },
-                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'common', value: 95, weight: 20 },
-                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'rare', value: 115, weight: 10 },
-                { name: 'Меофен Щит', image: 'dropcase6_2', rarity: 'rare', value: 135, weight: 8 },
-                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 155, weight: 6 },
-                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'rare', value: 170, weight: 4 },
-                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 185, weight: 2 },
-                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'epic', value: 205, weight: 1 }
+            6: [ // Кейс "Меофен" 100 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (40% общий шанс) - СНИЖЕНО с 70%!
+                { name: 'Меофен Порошок', image: 'dropcase6_8', rarity: 'common', value: 40, chance: 15 }, // СНИЖЕНО с 25% до 15%
+                { name: 'Меофен Таблетка', image: 'dropcase6_6', rarity: 'common', value: 65, chance: 15 }, // СНИЖЕНО с 25% до 15%
+                { name: 'Меофен Зелье', image: 'dropcase6_3', rarity: 'common', value: 85, chance: 10 }, // СНИЖЕНО с 20% до 10%
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (40% общий шанс) - УВЕЛИЧЕНО с 20%!
+                { name: 'Меофен Капсула', image: 'dropcase6_7', rarity: 'rare', value: 115, chance: 16 }, // УВЕЛИЧЕНО с 10% до 16%
+                { name: 'Меофен Щит', image: 'dropcase6_2', rarity: 'rare', value: 135, chance: 14 }, // УВЕЛИЧЕНО с 8% до 14%
+                { name: 'Меофен Меч', image: 'dropcase6_1', rarity: 'rare', value: 155, chance: 10 }, // УВЕЛИЧЕНО с 2% до 10%
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО в 2 раза!
+                { name: 'Меофен Лук', image: 'dropcase6_4', rarity: 'epic', value: 210, chance: 10 }, // УВЕЛИЧЕНО с 5% до 10%
+                { name: 'Меофен Раствор', image: 'dropcase6_9', rarity: 'epic', value: 280, chance: 6 }, // УВЕЛИЧЕНО с 3% до 6%
+                { name: 'Меофен Изумруд', image: 'dropcase6_5', rarity: 'epic', value: 350, chance: 3 }, // УВЕЛИЧЕНО с 1.5% до 3%
+                { name: 'Меофен Сыворотка', image: 'dropcase6_10', rarity: 'legendary', value: 600, chance: 1 } // УВЕЛИЧЕНО с 0.5% до 1%
             ],
-            7: [ // Кейс 250 ꙮ - дропы от 100 до 450 ꙮ (50/50 шанс окупа)
-                { name: 'ЧВК Стимулятор', image: 'dropcase7_3', rarity: 'common', value: 100, weight: 25 },
-                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 150, weight: 25 },
-                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 200, weight: 20 },
-                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'common', value: 230, weight: 20 },
-                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 280, weight: 10 },
-                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'rare', value: 320, weight: 8 },
-                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'rare', value: 360, weight: 6 },
-                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'rare', value: 400, weight: 4 },
-                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'epic', value: 430, weight: 2 },
-                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'epic', value: 480, weight: 1 }
+            7: [ // Кейс "ЧВК" 250 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (37% общий шанс) - СНИЖЕНО с 65%!
+                { name: 'ЧВК Стимулятор', image: 'dropcase7_3', rarity: 'common', value: 100, chance: 16 }, // СНИЖЕНО с 30%
+                { name: 'ЧВК Бронежилет', image: 'dropcase7_8', rarity: 'common', value: 150, chance: 11 }, // СНИЖЕНО с 20%
+                { name: 'ЧВК Клинок', image: 'dropcase7_1', rarity: 'common', value: 200, chance: 10 }, // СНИЖЕНО с 15%
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (43% общий шанс) - УВЕЛИЧЕНО с 25%!
+                { name: 'ЧВК Броня', image: 'dropcase7_2', rarity: 'rare', value: 300, chance: 25 }, // УВЕЛИЧЕНО с 15%
+                { name: 'ЧВК Автомат', image: 'dropcase7_6', rarity: 'rare', value: 380, chance: 18 }, // УВЕЛИЧЕНО с 10%
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'ЧВК Гранатомёт', image: 'dropcase7_7', rarity: 'epic', value: 520, chance: 10 }, // УВЕЛИЧЕНО с 5%
+                { name: 'ЧВК Снайперка', image: 'dropcase7_4', rarity: 'epic', value: 680, chance: 6 }, // УВЕЛИЧЕНО с 3%
+                { name: 'ЧВК Командир', image: 'dropcase7_9', rarity: 'epic', value: 900, chance: 3 }, // УВЕЛИЧЕНО с 1.5%
+                { name: 'ЧВК Алмаз', image: 'dropcase7_5', rarity: 'legendary', value: 1300, chance: 0.8 }, // УВЕЛИЧЕНО с 0.4%
+                { name: 'ЧВК Легенда', image: 'dropcase7_10', rarity: 'legendary', value: 2000, chance: 0.2 } // УВЕЛИЧЕНО с 0.1%
             ],
-            8: [ // Кейс 180 ꙮ - дропы от 75 до 340 ꙮ (50/50 шанс окупа)
-                { name: 'Берег Раковина', image: 'dropcase8_6', rarity: 'common', value: 75, weight: 25 },
-                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 115, weight: 25 },
-                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 155, weight: 20 },
-                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'common', value: 170, weight: 20 },
-                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 210, weight: 10 },
-                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'rare', value: 250, weight: 8 },
-                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'rare', value: 280, weight: 6 },
-                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'rare', value: 310, weight: 4 },
-                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'epic', value: 330, weight: 2 },
-                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'epic', value: 360, weight: 1 }
+            8: [ // Кейс "Берег" 180 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (38% общий шанс) - СНИЖЕНО!
+                { name: 'Берег Раковина', image: 'dropcase8_6', rarity: 'common', value: 75, chance: 17 },
+                { name: 'Берег Щит', image: 'dropcase8_2', rarity: 'common', value: 115, chance: 11 },
+                { name: 'Берег Меч', image: 'dropcase8_1', rarity: 'common', value: 155, chance: 10 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (42% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Берег Якорь', image: 'dropcase8_7', rarity: 'rare', value: 220, chance: 24 },
+                { name: 'Берег Жемчужина', image: 'dropcase8_3', rarity: 'rare', value: 280, chance: 18 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Берег Прилив', image: 'dropcase8_9', rarity: 'epic', value: 380, chance: 10 },
+                { name: 'Берег Волна', image: 'dropcase8_8', rarity: 'epic', value: 500, chance: 6 },
+                { name: 'Берег Трезубец', image: 'dropcase8_4', rarity: 'epic', value: 650, chance: 3 },
+                { name: 'Берег Океан', image: 'dropcase8_10', rarity: 'legendary', value: 950, chance: 0.8 },
+                { name: 'Берег Коралл', image: 'dropcase8_5', rarity: 'legendary', value: 1400, chance: 0.2 }
             ],
-            9: [ // Кейс 220 ꙮ - дропы от 90 до 410 ꙮ (50/50 шанс окупа)
-                { name: 'Молот Буря', image: 'dropcase9_3', rarity: 'common', value: 90, weight: 25 },
-                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 135, weight: 25 },
-                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 180, weight: 20 },
-                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'common', value: 200, weight: 20 },
-                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 250, weight: 10 },
-                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'rare', value: 290, weight: 8 },
-                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'rare', value: 330, weight: 6 },
-                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'rare', value: 370, weight: 4 },
-                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'epic', value: 390, weight: 2 },
-                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'epic', value: 440, weight: 1 }
+            9: [ // Кейс "Молот" 220 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (39% общий шанс) - СНИЖЕНО!
+                { name: 'Молот Буря', image: 'dropcase9_3', rarity: 'common', value: 90, chance: 17 },
+                { name: 'Молот Щит', image: 'dropcase9_2', rarity: 'common', value: 135, chance: 12 },
+                { name: 'Молот Удар', image: 'dropcase9_8', rarity: 'common', value: 180, chance: 10 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (41% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Молот Наковальня', image: 'dropcase9_6', rarity: 'rare', value: 260, chance: 23 },
+                { name: 'Молот Кувалда', image: 'dropcase9_7', rarity: 'rare', value: 320, chance: 18 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Молот Грома', image: 'dropcase9_1', rarity: 'epic', value: 460, chance: 10 },
+                { name: 'Молот Посох', image: 'dropcase9_4', rarity: 'epic', value: 600, chance: 6 },
+                { name: 'Молот Тора', image: 'dropcase9_10', rarity: 'epic', value: 780, chance: 3 },
+                { name: 'Молот Мьёльнир', image: 'dropcase9_9', rarity: 'legendary', value: 1200, chance: 0.8 },
+                { name: 'Молот Молния', image: 'dropcase9_5', rarity: 'legendary', value: 1800, chance: 0.2 }
             ],
-            10: [ // Кейс 160 ꙮ - дропы от 65 до 300 ꙮ (50/50 шанс окупа)
-                { name: 'Вихрь Эликсир', image: 'dropcase10_3', rarity: 'common', value: 65, weight: 25 },
-                { name: 'Вихрь Ветер', image: 'dropcase10_6', rarity: 'common', value: 100, weight: 25 },
-                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 135, weight: 20 },
-                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'common', value: 150, weight: 20 },
-                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 185, weight: 10 },
-                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'rare', value: 220, weight: 8 },
-                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'rare', value: 250, weight: 6 },
-                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'rare', value: 275, weight: 4 },
-                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'epic', value: 290, weight: 2 },
-                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'epic', value: 320, weight: 1 }
+            10: [ // Кейс "Вихрь" 160 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (40% общий шанс) - СНИЖЕНО!
+                { name: 'Вихрь Эликсир', image: 'dropcase10_3', rarity: 'common', value: 65, chance: 18 },
+                { name: 'Вихрь Ветер', image: 'dropcase10_6', rarity: 'common', value: 100, chance: 12 },
+                { name: 'Вихрь Щит', image: 'dropcase10_2', rarity: 'common', value: 135, chance: 10 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (40% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Вихрь Клинок', image: 'dropcase10_1', rarity: 'rare', value: 180, chance: 22 },
+                { name: 'Вихрь Буря', image: 'dropcase10_7', rarity: 'rare', value: 240, chance: 18 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Вихрь Ураган', image: 'dropcase10_8', rarity: 'epic', value: 340, chance: 10 },
+                { name: 'Вихрь Лук', image: 'dropcase10_4', rarity: 'epic', value: 450, chance: 6 },
+                { name: 'Вихрь Циклон', image: 'dropcase10_10', rarity: 'epic', value: 580, chance: 3 },
+                { name: 'Вихрь Торнадо', image: 'dropcase10_9', rarity: 'legendary', value: 850, chance: 0.8 },
+                { name: 'Вихрь Перо', image: 'dropcase10_5', rarity: 'legendary', value: 1200, chance: 0.2 }
             ],
-            11: [ // Кейс 350 ꙮ - дропы от 140 до 650 ꙮ (50/50 шанс окупа)
-                { name: 'Призрак Зелье', image: 'dropcase11_3', rarity: 'common', value: 140, weight: 25 },
-                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 210, weight: 25 },
-                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 280, weight: 20 },
-                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'common', value: 320, weight: 20 },
-                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 390, weight: 10 },
-                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'rare', value: 450, weight: 8 },
-                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'rare', value: 510, weight: 6 },
-                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'rare', value: 570, weight: 4 },
-                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'epic', value: 610, weight: 2 },
-                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'epic', value: 680, weight: 1 }
+            11: [ // Кейс "Призрак" 350 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Призрак Зелье', image: 'dropcase11_3', rarity: 'common', value: 140, chance: 30 },
+                { name: 'Призрак Тень', image: 'dropcase11_6', rarity: 'common', value: 210, chance: 20 },
+                { name: 'Призрак Эктоплазма', image: 'dropcase11_8', rarity: 'common', value: 280, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Призрак Броня', image: 'dropcase11_2', rarity: 'rare', value: 420, chance: 15 },
+                { name: 'Призрак Меч', image: 'dropcase11_1', rarity: 'rare', value: 520, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Призрак Дух', image: 'dropcase11_7', rarity: 'epic', value: 730, chance: 5 },
+                { name: 'Призрак Лук', image: 'dropcase11_4', rarity: 'epic', value: 950, chance: 3 },
+                { name: 'Призрак Король', image: 'dropcase11_9', rarity: 'epic', value: 1250, chance: 1.5 },
+                { name: 'Призрак Душа', image: 'dropcase11_5', rarity: 'legendary', value: 1800, chance: 0.4 },
+                { name: 'Призрак Бог', image: 'dropcase11_10', rarity: 'legendary', value: 2800, chance: 0.1 }
             ],
-            12: [ // Кейс 290 ꙮ - дропы от 115 до 540 ꙮ (50/50 шанс окупа)
-                { name: 'Лёд Зелье', image: 'dropcase12_3', rarity: 'common', value: 115, weight: 25 },
-                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 175, weight: 25 },
-                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 235, weight: 20 },
-                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'common', value: 270, weight: 20 },
-                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 330, weight: 10 },
-                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'rare', value: 380, weight: 8 },
-                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'rare', value: 430, weight: 6 },
-                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'rare', value: 480, weight: 4 },
-                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'epic', value: 510, weight: 2 },
-                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'epic', value: 570, weight: 1 }
+            12: [ // Кейс "Лёд" 290 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Лёд Зелье', image: 'dropcase12_3', rarity: 'common', value: 115, chance: 30 },
+                { name: 'Лёд Кристалл', image: 'dropcase12_6', rarity: 'common', value: 175, chance: 20 },
+                { name: 'Лёд Щит', image: 'dropcase12_2', rarity: 'common', value: 235, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Лёд Иней', image: 'dropcase12_7', rarity: 'rare', value: 350, chance: 15 },
+                { name: 'Лёд Клинок', image: 'dropcase12_1', rarity: 'rare', value: 440, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Лёд Мороз', image: 'dropcase12_8', rarity: 'epic', value: 610, chance: 5 },
+                { name: 'Лёд Посох', image: 'dropcase12_4', rarity: 'epic', value: 800, chance: 3 },
+                { name: 'Лёд Айсберг', image: 'dropcase12_9', rarity: 'epic', value: 1050, chance: 1.5 },
+                { name: 'Лёд Снежинка', image: 'dropcase12_5', rarity: 'legendary', value: 1500, chance: 0.4 },
+                { name: 'Лёд Вечность', image: 'dropcase12_10', rarity: 'legendary', value: 2300, chance: 0.1 }
             ],
-            13: [ // Кейс 400 ꙮ - дропы от 160 до 750 ꙮ (50/50 шанс окупа)
-                { name: 'Огонь Эликсир', image: 'dropcase13_3', rarity: 'common', value: 160, weight: 25 },
-                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 240, weight: 25 },
-                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 320, weight: 20 },
-                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'common', value: 360, weight: 20 },
-                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 450, weight: 10 },
-                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'rare', value: 520, weight: 8 },
-                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'rare', value: 590, weight: 6 },
-                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'rare', value: 660, weight: 4 },
-                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'epic', value: 710, weight: 2 },
-                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'epic', value: 780, weight: 1 }
+            13: [ // Кейс "Огонь" 400 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Огонь Эликсир', image: 'dropcase13_3', rarity: 'common', value: 160, chance: 30 },
+                { name: 'Огонь Пламя', image: 'dropcase13_6', rarity: 'common', value: 240, chance: 20 },
+                { name: 'Огонь Броня', image: 'dropcase13_2', rarity: 'common', value: 320, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Огонь Меч', image: 'dropcase13_1', rarity: 'rare', value: 480, chance: 15 },
+                { name: 'Огонь Феникс', image: 'dropcase13_8', rarity: 'rare', value: 600, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Огонь Лава', image: 'dropcase13_7', rarity: 'epic', value: 840, chance: 5 },
+                { name: 'Огонь Посох', image: 'dropcase13_4', rarity: 'epic', value: 1100, chance: 3 },
+                { name: 'Огонь Дракон', image: 'dropcase13_9', rarity: 'epic', value: 1450, chance: 1.5 },
+                { name: 'Огонь Сердце', image: 'dropcase13_5', rarity: 'legendary', value: 2100, chance: 0.4 },
+                { name: 'Огонь Солнце', image: 'dropcase13_10', rarity: 'legendary', value: 3200, chance: 0.1 }
             ],
-            14: [ // Кейс 320 ꙮ - дропы от 130 до 600 ꙮ (50/50 шанс окупа)
-                { name: 'Тень Зелье', image: 'dropcase14_3', rarity: 'common', value: 130, weight: 25 },
-                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 195, weight: 25 },
-                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 260, weight: 20 },
-                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'common', value: 300, weight: 20 },
-                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 370, weight: 10 },
-                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'rare', value: 430, weight: 8 },
-                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'rare', value: 490, weight: 6 },
-                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'rare', value: 550, weight: 4 },
-                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'epic', value: 580, weight: 2 },
-                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'epic', value: 640, weight: 1 }
+            14: [ // Кейс "Тень" 320 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Тень Зелье', image: 'dropcase14_3', rarity: 'common', value: 130, chance: 30 },
+                { name: 'Тень Сумрак', image: 'dropcase14_6', rarity: 'common', value: 195, chance: 20 },
+                { name: 'Тень Мрак', image: 'dropcase14_8', rarity: 'common', value: 260, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Тень Мантия', image: 'dropcase14_2', rarity: 'rare', value: 380, chance: 15 },
+                { name: 'Тень Клинок', image: 'dropcase14_1', rarity: 'rare', value: 480, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Тень Кинжал', image: 'dropcase14_4', rarity: 'epic', value: 670, chance: 5 },
+                { name: 'Тень Ночь', image: 'dropcase14_7', rarity: 'epic', value: 880, chance: 3 },
+                { name: 'Тень Бездна', image: 'dropcase14_9', rarity: 'epic', value: 1150, chance: 1.5 },
+                { name: 'Тень Осколок', image: 'dropcase14_5', rarity: 'legendary', value: 1650, chance: 0.4 },
+                { name: 'Тень Пустота', image: 'dropcase14_10', rarity: 'legendary', value: 2500, chance: 0.1 }
             ],
-            15: [ // Кейс 270 ꙮ - дропы от 110 до 510 ꙮ (50/50 шанс окупа)
-                { name: 'Свет Вода', image: 'dropcase15_3', rarity: 'common', value: 110, weight: 25 },
-                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 165, weight: 25 },
-                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 220, weight: 20 },
-                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'common', value: 250, weight: 20 },
-                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 310, weight: 10 },
-                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'rare', value: 360, weight: 8 },
-                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'rare', value: 410, weight: 6 },
-                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'rare', value: 460, weight: 4 },
-                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'epic', value: 490, weight: 2 },
-                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'epic', value: 540, weight: 1 }
+            15: [ // Кейс "Свет" 270 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Свет Вода', image: 'dropcase15_3', rarity: 'common', value: 110, chance: 30 },
+                { name: 'Свет Луч', image: 'dropcase15_6', rarity: 'common', value: 165, chance: 20 },
+                { name: 'Свет Доспехи', image: 'dropcase15_2', rarity: 'common', value: 220, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Свет Меч', image: 'dropcase15_1', rarity: 'rare', value: 320, chance: 15 },
+                { name: 'Свет Аура', image: 'dropcase15_8', rarity: 'rare', value: 410, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Свет Сияние', image: 'dropcase15_7', rarity: 'epic', value: 570, chance: 5 },
+                { name: 'Свет Посох', image: 'dropcase15_4', rarity: 'epic', value: 750, chance: 3 },
+                { name: 'Свет Святость', image: 'dropcase15_9', rarity: 'epic', value: 980, chance: 1.5 },
+                { name: 'Свет Благословение', image: 'dropcase15_5', rarity: 'legendary', value: 1400, chance: 0.4 },
+                { name: 'Свет Божество', image: 'dropcase15_10', rarity: 'legendary', value: 2100, chance: 0.1 }
             ],
-            16: [ // Кейс 500 ꙮ - дропы от 200 до 950 ꙮ (50/50 шанс окупа)
-                { name: 'Хаос Зелье', image: 'dropcase16_3', rarity: 'common', value: 200, weight: 25 },
-                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 300, weight: 25 },
-                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 400, weight: 20 },
-                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'common', value: 450, weight: 20 },
-                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 560, weight: 10 },
-                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'rare', value: 650, weight: 8 },
-                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'rare', value: 740, weight: 6 },
-                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'rare', value: 830, weight: 4 },
-                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'epic', value: 890, weight: 2 },
-                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'epic', value: 980, weight: 1 }
+            16: [ // Кейс "Хаос" 500 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (35% общий шанс) - СИЛЬНО СНИЖЕНО!
+                { name: 'Хаос Зелье', image: 'dropcase16_3', rarity: 'common', value: 200, chance: 15 },
+                { name: 'Хаос Разрушение', image: 'dropcase16_6', rarity: 'common', value: 300, chance: 10 },
+                { name: 'Хаос Доспех', image: 'dropcase16_2', rarity: 'common', value: 400, chance: 10 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (45% общий шанс) - СИЛЬНО УВЕЛИЧЕНО!
+                { name: 'Хаос Клинок', image: 'dropcase16_1', rarity: 'rare', value: 600, chance: 25 },
+                { name: 'Хаос Анархия', image: 'dropcase16_7', rarity: 'rare', value: 750, chance: 20 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Хаос Безумие', image: 'dropcase16_8', rarity: 'epic', value: 1050, chance: 10 },
+                { name: 'Хаос Посох', image: 'dropcase16_4', rarity: 'epic', value: 1400, chance: 6 },
+                { name: 'Хаос Энтропия', image: 'dropcase16_9', rarity: 'epic', value: 1800, chance: 3 },
+                { name: 'Хаос Сердце', image: 'dropcase16_5', rarity: 'legendary', value: 2600, chance: 0.8 },
+                { name: 'Хаос Апокалипсис', image: 'dropcase16_10', rarity: 'legendary', value: 4000, chance: 0.2 }
             ],
-            17: [ // Кейс 450 ꙮ - дропы от 180 до 850 ꙮ (50/50 шанс окупа)
-                { name: 'Порядок Эликсир', image: 'dropcase17_3', rarity: 'common', value: 180, weight: 25 },
-                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 270, weight: 25 },
-                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 360, weight: 20 },
-                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'common', value: 410, weight: 20 },
-                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 510, weight: 10 },
-                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'rare', value: 590, weight: 8 },
-                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'rare', value: 670, weight: 6 },
-                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'rare', value: 750, weight: 4 },
-                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'epic', value: 810, weight: 2 },
-                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'epic', value: 890, weight: 1 }
+            17: [ // Кейс "Порядок" 450 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Порядок Эликсир', image: 'dropcase17_3', rarity: 'common', value: 180, chance: 30 },
+                { name: 'Порядок Закон', image: 'dropcase17_6', rarity: 'common', value: 270, chance: 20 },
+                { name: 'Порядок Доспех', image: 'dropcase17_2', rarity: 'common', value: 360, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Порядок Меч', image: 'dropcase17_1', rarity: 'rare', value: 540, chance: 15 },
+                { name: 'Порядок Справедливость', image: 'dropcase17_7', rarity: 'rare', value: 680, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Порядок Гармония', image: 'dropcase17_8', rarity: 'epic', value: 950, chance: 5 },
+                { name: 'Порядок Посох', image: 'dropcase17_4', rarity: 'epic', value: 1250, chance: 3 },
+                { name: 'Порядок Баланс', image: 'dropcase17_9', rarity: 'epic', value: 1650, chance: 1.5 },
+                { name: 'Порядок Печать', image: 'dropcase17_5', rarity: 'legendary', value: 2350, chance: 0.4 },
+                { name: 'Порядок Абсолют', image: 'dropcase17_10', rarity: 'legendary', value: 3600, chance: 0.1 }
             ],
-            18: [ // Кейс 380 ꙮ - дропы от 150 до 720 ꙮ (50/50 шанс окупа)
-                { name: 'Время Зелье', image: 'dropcase18_3', rarity: 'common', value: 150, weight: 25 },
-                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 230, weight: 25 },
-                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 310, weight: 20 },
-                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'common', value: 350, weight: 20 },
-                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 440, weight: 10 },
-                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'rare', value: 510, weight: 8 },
-                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'rare', value: 580, weight: 6 },
-                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'rare', value: 650, weight: 4 },
-                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'epic', value: 700, weight: 2 },
-                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'epic', value: 770, weight: 1 }
+            18: [ // Кейс "Время" 380 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Время Зелье', image: 'dropcase18_3', rarity: 'common', value: 150, chance: 30 },
+                { name: 'Время Хронос', image: 'dropcase18_6', rarity: 'common', value: 230, chance: 20 },
+                { name: 'Время Доспех', image: 'dropcase18_2', rarity: 'common', value: 310, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Время Клинок', image: 'dropcase18_1', rarity: 'rare', value: 450, chance: 15 },
+                { name: 'Время Петля', image: 'dropcase18_7', rarity: 'rare', value: 580, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Время Портал', image: 'dropcase18_8', rarity: 'epic', value: 800, chance: 5 },
+                { name: 'Время Посох', image: 'dropcase18_4', rarity: 'epic', value: 1050, chance: 3 },
+                { name: 'Время Парадокс', image: 'dropcase18_9', rarity: 'epic', value: 1380, chance: 1.5 },
+                { name: 'Время Часы', image: 'dropcase18_5', rarity: 'legendary', value: 1980, chance: 0.4 },
+                { name: 'Время Вечность', image: 'dropcase18_10', rarity: 'legendary', value: 3000, chance: 0.1 }
             ],
-            19: [ // Кейс 600 ꙮ - дропы от 240 до 1150 ꙮ (50/50 шанс окупа)
-                { name: 'Космос Нектар', image: 'dropcase19_3', rarity: 'common', value: 240, weight: 25 },
-                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 360, weight: 25 },
-                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 480, weight: 20 },
-                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'common', value: 540, weight: 20 },
-                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 680, weight: 10 },
-                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'rare', value: 790, weight: 8 },
-                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'rare', value: 900, weight: 6 },
-                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'rare', value: 1010, weight: 4 },
-                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'epic', value: 1080, weight: 2 },
-                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'epic', value: 1190, weight: 1 }
+            19: [ // Кейс "Космос" 600 ꙮ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
+                { name: 'Космос Нектар', image: 'dropcase19_3', rarity: 'common', value: 240, chance: 30 },
+                { name: 'Космос Звезда', image: 'dropcase19_6', rarity: 'common', value: 360, chance: 20 },
+                { name: 'Космос Броня', image: 'dropcase19_2', rarity: 'common', value: 480, chance: 15 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Космос Меч', image: 'dropcase19_1', rarity: 'rare', value: 720, chance: 15 },
+                { name: 'Космос Галактика', image: 'dropcase19_7', rarity: 'rare', value: 900, chance: 10 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Космос Посох', image: 'dropcase19_4', rarity: 'epic', value: 1260, chance: 5 },
+                { name: 'Космос Туманность', image: 'dropcase19_8', rarity: 'epic', value: 1650, chance: 3 },
+                { name: 'Космос Квазар', image: 'dropcase19_9', rarity: 'epic', value: 2150, chance: 1.5 },
+                { name: 'Космос Сердце', image: 'dropcase19_5', rarity: 'legendary', value: 3100, chance: 0.4 },
+                { name: 'Космос Вселенная', image: 'dropcase19_10', rarity: 'legendary', value: 4800, chance: 0.1 }
             ],
-            20: [ // Кейс 750 ꙮ - дропы от 300 до 1400 ꙮ (50/50 шанс окупа)
-                { name: 'Вечность Эликсир', image: 'dropcase20_3', rarity: 'common', value: 300, weight: 25 },
-                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 450, weight: 25 },
-                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 600, weight: 20 },
-                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'common', value: 675, weight: 20 },
-                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 850, weight: 10 },
-                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'rare', value: 990, weight: 8 },
-                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'rare', value: 1130, weight: 6 },
-                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'rare', value: 1270, weight: 4 },
-                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'epic', value: 1350, weight: 2 },
-                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 1480, weight: 1 }
+            20: [ // Кейс "Вечность" 750 ꙮ - СБАЛАНСИРОВАННЫЕ ШАНСЫ
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (32% общий шанс) - СИЛЬНО СНИЖЕНО!
+                { name: 'Вечность Эликсир', image: 'dropcase20_3', rarity: 'common', value: 300, chance: 14 },
+                { name: 'Вечность Бессмертие', image: 'dropcase20_6', rarity: 'common', value: 450, chance: 9 },
+                { name: 'Вечность Доспех', image: 'dropcase20_2', rarity: 'common', value: 600, chance: 9 },
+                
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (48% общий шанс) - СИЛЬНО УВЕЛИЧЕНО!
+                { name: 'Вечность Клинок', image: 'dropcase20_1', rarity: 'rare', value: 900, chance: 26 },
+                { name: 'Вечность Бесконечность', image: 'dropcase20_7', rarity: 'rare', value: 1125, chance: 22 },
+                
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс) - УВЕЛИЧЕНО!
+                { name: 'Вечность Абсолют', image: 'dropcase20_8', rarity: 'epic', value: 1575, chance: 10 },
+                { name: 'Вечность Посох', image: 'dropcase20_4', rarity: 'epic', value: 2100, chance: 6 },
+                { name: 'Вечность Омега', image: 'dropcase20_9', rarity: 'epic', value: 2700, chance: 3 },
+                { name: 'Вечность Душа', image: 'dropcase20_5', rarity: 'legendary', value: 3900, chance: 0.8 },
+                { name: 'Вечность Альфа', image: 'dropcase20_10', rarity: 'legendary', value: 6000, chance: 0.2 }
             ]
         };
 
@@ -1775,6 +1961,8 @@
                 itemEl.style.cursor = 'pointer';
                 
                 const iconEl = document.createElement('div');
+                // 🎨 ИСПРАВЛЕНО: Используем реальную цену кейса откуда получен дроп (или среднюю)
+                const dropColor = getDropValueColor(item, item.casePrice || 200); // Цена кейса откуда получен дроп
                 iconEl.className = `inventory-item-icon ${item.rarity}`;
                 iconEl.style.cssText = `
                     width: 60px;
@@ -1787,8 +1975,9 @@
                     font-size: 30px;
                     background-size: cover;
                     background-position: center;
-                    background-color: ${getRarityColor(item.rarity)};
-                    border: 3px solid ${getRarityColor(item.rarity)};
+                    background-color: ${dropColor};
+                    border: 3px solid ${dropColor};
+                    box-shadow: 0 0 10px ${dropColor}40;
                 `;
                 
                 // Загружаем изображение дропа для инвентаря
@@ -1908,7 +2097,11 @@
                 const itemMenuValue = document.getElementById('itemMenuValue');
                 
                 // Set up item image
-                itemMenuImage.style.background = getRarityColor(item.rarity);
+                // 🎨 ИСПРАВЛЕНО: Используем сохранённую цену кейса для дропа
+                const dropColor = getDropValueColor(item, item.casePrice || 200);
+                itemMenuImage.style.background = dropColor;
+                itemMenuImage.style.border = `3px solid ${dropColor}`;
+                itemMenuImage.style.boxShadow = `0 0 15px ${dropColor}40`;
                 itemMenuImage.innerHTML = '';
                 itemMenuImage.style.display = 'flex';
                 itemMenuImage.style.alignItems = 'center';
@@ -2043,12 +2236,60 @@
             }
         }
 
+        // 🎨 ФУНКЦИЯ ПОЛУЧЕНИЯ ЦЕНЫ ТЕКУЩЕГО ОТКРЫТОГО КЕЙСА
+        function getCurrentCasePrice() {
+            return currentCasePrice;
+        }
+        
+        // 🎨 НОВАЯ СИСТЕМА ЦВЕТОВ ДРОПОВ ПО ПРИБЫЛЬНОСТИ
+        function getDropValueColor(item, casePrice) {
+            const value = item.value;
+            const price = casePrice || 120; // Цена кейса по умолчанию
+            
+            console.log(`🎨 Расчёт цвета: дроп ${value} ꙮ vs кейс ${price} ꙮ`);
+            
+            if (value < price) {
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ - красный
+                console.log(`🔴 УБЫТОЧНЫЙ: ${value} < ${price} = красный`);
+                return '#e74c3c';
+            } else if (value >= price && value < price * 2) {
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ - жёлтый
+                console.log(`🟡 ОКУПАЕМЫЙ: ${value} >= ${price} && < ${price * 2} = жёлтый`);
+                return '#f1c40f';
+            } else if (value >= price * 2 && value < price * 5) {
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ - зелёный
+                console.log(`🟢 ПРИБЫЛЬНЫЙ: ${value} >= ${price * 2} && < ${price * 5} = зелёный`);
+                return '#27ae60';
+            } else {
+                // 💎 ДЖЕКПОТЫ - фиолетовый (очень прибыльные)
+                console.log(`💎 ДЖЕКПОТ: ${value} >= ${price * 5} = фиолетовый`);
+                return '#8e44ad';
+            }
+        }
+        
+        // 📊 ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ТИПА ДРОПА ПО ПРИБЫЛЬНОСТИ
+        function getDropType(item, casePrice) {
+            const value = item.value;
+            const price = casePrice || 120;
+            
+            if (value < price) {
+                return 'loss';      // 🔴 Убыточные
+            } else if (value >= price && value < price * 2) {
+                return 'breakeven'; // 🟡 Окупаемые
+            } else if (value >= price * 2 && value < price * 5) {
+                return 'profit';    // 🟢 Прибыльные
+            } else {
+                return 'jackpot';   // 💎 Джекпоты
+            }
+        }
+        
+        // Функция для совместимости со старым кодом
         function getRarityColor(rarity) {
             switch (rarity) {
-                case 'common': return '#95a5a6';
-                case 'rare': return '#3498db';
-                case 'epic': return '#9b59b6';
-                case 'legendary': return '#f39c12';
+                case 'common': return '#e74c3c';    // Красный для обычных
+                case 'rare': return '#f1c40f';      // Жёлтый для редких
+                case 'epic': return '#27ae60';      // Зелёный для эпических
+                case 'legendary': return '#8e44ad'; // Фиолетовый для легендарных
                 default: return '#95a5a6';
             }
         }
@@ -2057,6 +2298,158 @@
         function playErrorSound() {
             // Звуки отключены - только визуальная обратная связь
             console.log('⚠️ Недостаточно средств для открытия кейса');
+        }
+
+        // 📊 ФУНКЦИЯ ПОКАЗА ШАНСОВ ДРОПОВ
+        function showCaseDrops(caseType) {
+            const caseItems = items[caseType];
+            if (!caseItems) {
+                showNoDropsMessage();
+                return;
+            }
+            
+            // Получаем цену кейса для расчётов
+            const casePrice = parseInt(document.querySelector(`[data-case="${caseType}"]`).dataset.price);
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10006;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
+            
+            // Определяем название кейса
+            const caseNames = {
+                1: 'Хуюнтик', 2: 'Кизик', 3: 'Жало', 4: 'Шер', 5: 'Глист',
+                6: 'Меофен', 7: 'ЧВК', 8: 'Берег', 9: 'Молот', 10: 'Вихрь',
+                11: 'Призрак', 12: 'Лёд', 13: 'Огонь', 14: 'Тень', 15: 'Свет',
+                16: 'Хаос', 17: 'Порядок', 18: 'Время', 19: 'Космос', 20: 'Вечность'
+            };
+            
+            const caseName = caseNames[caseType] || `Кейс ${caseType}`;
+            const isMobile = window.innerWidth <= 768;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #2c3e50, #34495e);
+                    border: 3px solid #e74c3c;
+                    border-radius: ${isMobile ? '15px' : '20px'};
+                    padding: ${isMobile ? '20px 15px' : '30px'};
+                    max-width: ${isMobile ? '350px' : '600px'};
+                    width: ${isMobile ? '95vw' : 'auto'};
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    text-align: center;
+                ">
+                    <h2 style="color: #ffd700; font-size: ${isMobile ? '18px' : '24px'}; margin-bottom: ${isMobile ? '15px' : '20px'};">
+                        📊 ДРОПЫ КЕЙСА "${caseName.toUpperCase()}"
+                    </h2>
+                    <div style="
+                        display: grid;
+                        grid-template-columns: ${isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))'};
+                        gap: ${isMobile ? '8px' : '12px'};
+                        margin-bottom: ${isMobile ? '20px' : '25px'};
+                    ">
+                        ${caseItems.map(item => {
+                            const dropColor = getDropValueColor(item, casePrice);
+                            return `
+                            <div style="
+                                background: ${dropColor};
+                                background: linear-gradient(145deg, ${dropColor}, ${dropColor}CC);
+                                border-radius: ${isMobile ? '8px' : '10px'};
+                                padding: ${isMobile ? '10px' : '12px'};
+                                border: 2px solid rgba(255,255,255,0.3);
+                                display: flex;
+                                align-items: center;
+                                gap: ${isMobile ? '8px' : '10px'};
+                                text-align: left;
+                                box-shadow: 0 2px 8px ${dropColor}40;
+                            ">
+                                <div style="
+                                    width: ${isMobile ? '40px' : '50px'};
+                                    height: ${isMobile ? '40px' : '50px'};
+                                    background: rgba(255,255,255,0.1);
+                                    border-radius: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: ${isMobile ? '16px' : '20px'};
+                                    flex-shrink: 0;
+                                ">📦</div>
+                                <div style="flex-grow: 1;">
+                                    <div style="color: #fff; font-size: ${isMobile ? '12px' : '14px'}; font-weight: bold; line-height: 1.2;">
+                                        ${item.name}
+                                    </div>
+                                    <div style="color: #ffd700; font-size: ${isMobile ? '11px' : '13px'}; margin-top: 2px;">
+                                        ${item.value} ꙮ
+                                    </div>
+                                </div>
+                                <div style="
+                                    background: rgba(255,255,255,0.2);
+                                    border-radius: 4px;
+                                    padding: ${isMobile ? '4px 6px' : '5px 8px'};
+                                    font-size: ${isMobile ? '10px' : '12px'};
+                                    font-weight: bold;
+                                    color: #fff;
+                                    text-align: center;
+                                    min-width: ${isMobile ? '35px' : '40px'};
+                                ">
+                                    ${item.chance}%
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <div style="
+                        background: rgba(255,255,255,0.1);
+                        border-radius: ${isMobile ? '8px' : '10px'};
+                        padding: ${isMobile ? '12px' : '15px'};
+                        margin-bottom: ${isMobile ? '15px' : '20px'};
+                        text-align: left;
+                    ">
+                        <h3 style="color: #ffd700; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: 8px;">📈 Статистика шансов:</h3>
+                        <div style="color: #fff; font-size: ${isMobile ? '11px' : '13px'}; line-height: 1.4;">
+                            🔴 Убыточные дропы: <strong>${caseItems.filter(item => item.value < casePrice).reduce((sum, item) => sum + item.chance, 0).toFixed(1)}%</strong><br>
+                            🟡 Окупаемые дропы: <strong>${caseItems.filter(item => item.value >= casePrice && item.value < casePrice * 2).reduce((sum, item) => sum + item.chance, 0).toFixed(1)}%</strong><br>
+                            🟢 Прибыльные дропы: <strong>${caseItems.filter(item => item.value >= casePrice * 2 && item.value < casePrice * 5).reduce((sum, item) => sum + item.chance, 0).toFixed(1)}%</strong><br>
+                            💎 Джекпоты (Legendary): <strong>${caseItems.filter(item => item.value >= casePrice * 5 || item.rarity === 'legendary').reduce((sum, item) => sum + item.chance, 0).toFixed(1)}%</strong>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: linear-gradient(145deg, #3498db, #2980b9);
+                        color: white;
+                        border: none;
+                        padding: ${isMobile ? '12px 25px' : '15px 30px'};
+                        border-radius: ${isMobile ? '10px' : '12px'};
+                        font-size: ${isMobile ? '14px' : '16px'};
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        ${isMobile ? 'width: 100%; max-width: 200px;' : ''}
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        👍 Понятно
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Закрытие по клику на фон
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            console.log(`📊 Показаны дропы кейса ${caseName} с шансами в процентах`);
         }
 
         function openCase(caseType, price) {
@@ -2100,6 +2493,11 @@
 
             // Only proceed with roulette if balance is sufficient
             balance -= price;
+            
+            // 🎨 СОХРАНЯЕМ ЦЕНУ ОТКРЫВАЕМОГО КЕЙСА ДЛЯ ПРАВИЛЬНЫХ ЦВЕТОВ!
+            currentCasePrice = price;
+            console.log(`🎨 Открываем кейс за ${price} ꙮ - сохранили цену для расчёта цветов`);
+            
             updateBalance();
             
             // 🏛️ ПРОВЕРЯЕМ ГОСДОЛГ ПОСЛЕ ОТКРЫТИЯ КЕЙСА
@@ -2125,34 +2523,60 @@
 
             // Звуки отключены
 
-            // Generate roulette items with weighted probability
+            // 🎲 НОВАЯ СИСТЕМА ВЫБОРА ДРОПОВ ПО ПРОЦЕНТАМ
             const availableItems = items[caseType];
             const rouletteItems = [];
             
-            // Create weighted selection function
-            function getWeightedRandomItem(items) {
-                const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
-                let random = Math.random() * totalWeight;
+            // Функция выбора дропа по проценту шанса
+            function getRandomItemByChance(items) {
+                // Проверяем что сумма шансов = 100%
+                const totalChance = items.reduce((sum, item) => sum + item.chance, 0);
+                console.log(`🎲 Общий шанс кейса ${caseType}: ${totalChance}%`);
                 
+                // Генерируем случайное число от 0 до 100
+                let random = Math.random() * 100;
+                console.log(`🎲 Выпало число: ${random.toFixed(2)}%`);
+                
+                // Ищем какой дроп выпал
+                let currentChance = 0;
                 for (let item of items) {
-                    random -= item.weight;
-                    if (random <= 0) {
+                    currentChance += item.chance;
+                    if (random <= currentChance) {
+                        console.log(`🎯 Выпал дроп: ${item.name} (шанс ${item.chance}%, стоимость ${item.value} ꙮ)`);
                         return item;
                     }
                 }
-                return items[0]; // fallback
+                
+                // Fallback - самый частый дроп
+                console.log('🔄 Fallback - берём самый частый дроп');
+                return items.reduce((prev, current) => (prev.chance > current.chance) ? prev : current);
             }
             
-            // Создаем ровно 30 элементов рулетки для лучшего контроля
+            // 🎰 СОЗДАЁМ РУЛЕТКУ - СНАЧАЛА ОПРЕДЕЛЯЕМ ВЫИГРЫШ!
+            const actualWinningItem = getRandomItemByChance(availableItems);
+            console.log(`🎯 РЕАЛЬНЫЙ ВЫИГРЫШ: ${actualWinningItem.name} (${actualWinningItem.value} ꙮ, шанс ${actualWinningItem.chance}%)`);
+            
+            // Генерируем 30 дропов для визуального эффекта
             for (let i = 0; i < 30; i++) {
-                const randomItem = getWeightedRandomItem(availableItems);
-                rouletteItems.push(randomItem);
+                if (i === 15) {
+                    // 15-й элемент (центральный) - ставим РЕАЛЬНЫЙ выигрышный дроп!
+                    rouletteItems.push(actualWinningItem);
+                    console.log(`🎯 ВЫИГРЫШНЫЙ СЛОТ (15): ${actualWinningItem.name} - размещён в рулетке`);
+                } else {
+                    // Остальные слоты - случайные дропы для визуального эффекта
+                    const visualItem = getRandomItemByChance(availableItems);
+                    rouletteItems.push(visualItem);
+                }
             }
 
             // Create roulette items
+            // 🎨 ИСПОЛЬЗУЕМ СОХРАНЁННУЮ ЦЕНУ КЕЙСА ВМЕСТО ПОИСКА В DOM
+            const casePrice = currentCasePrice; // Уже сохранена выше!
+            
             rouletteItems.forEach((item, index) => {
+                const dropType = getDropType(item, casePrice);
                 const itemEl = document.createElement('div');
-                itemEl.className = `roulette-item ${item.rarity}`;
+                itemEl.className = `roulette-item ${dropType}`;
                 itemEl.dataset.index = index;
                 itemEl.dataset.originalIndex = index; // Сохраняем оригинальный индекс
                 itemEl.style.transition = 'all 0.2s'; // Для плавного выделения
@@ -2193,13 +2617,13 @@
 
             // Улучшенная анимация рулетки
             setTimeout(() => {
-                // Случайный индекс для остановки (от 12 до 18) - центральная область под стрелкой
-                const stopIndex = Math.floor(Math.random() * 6) + 12;
+                // ОСТАНАВЛИВАЕМСЯ ТОЧНО НА 15-м элементе (где размещён реальный выигрыш)
+                const stopIndex = 15; // Фиксированная остановка на выигрышном элементе!
                 const itemWidth = 150; // Ширина одного элемента
                 const containerWidth = document.querySelector('.roulette-container').offsetWidth;
                 const centerPosition = containerWidth / 2; // Центр контейнера
                 
-                // ИСПРАВЛЕННЫЙ расчет: точно под стрелкой
+                // Точный расчёт для остановки ПОД СТРЕЛКОЙ
                 const offset = -(stopIndex * itemWidth) + centerPosition - (itemWidth / 2);
                 
                 // Сбрасываем позицию
@@ -2211,12 +2635,11 @@
                 rouletteStrip.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 rouletteStrip.style.transform = `translateX(${offset}px)`;
                 
-                const actualWinningItem = rouletteItems[stopIndex % rouletteItems.length];
-                console.log(`🎰 Рулетка: остановка на элементе ${stopIndex} - ${actualWinningItem.name}`);
+                console.log(`🎰 Рулетка: остановка ТОЧНО на элементе 15 - ${actualWinningItem.name}`);
                 
                 // Выделяем выигрышный элемент во время анимации
                 setTimeout(() => {
-                    const winningElement = rouletteStrip.children[stopIndex];
+                    const winningElement = rouletteStrip.children[15]; // Всегда 15-й элемент!
                     if (winningElement) {
                         winningElement.style.transform = 'scale(1.1)';
                         winningElement.style.filter = 'brightness(1.3)';
@@ -2226,12 +2649,13 @@
                 
                 // После анимации показываем результат
                 setTimeout(() => {
-                    const winningItem = rouletteItems[stopIndex % rouletteItems.length];
+                    // ПОКАЗЫВАЕМ РЕАЛЬНЫЙ ВЫИГРЫШНЫЙ ДРОП (не тот что под стрелкой!)
+                    console.log(`🏆 ИТОГОВЫЙ РЕЗУЛЬТАТ: ${actualWinningItem.name} (${actualWinningItem.value} ꙮ, шанс ${actualWinningItem.chance}%)`);
                     
                     // 🎵 ПРОИГРЫВАЕМ ЗВУК В ЗАВИСИМОСТИ ОТ РЕДКОСТИ И ЦЕННОСТИ
-                    playDropSoundByRarity(winningItem);
+                    playDropSoundByRarity(actualWinningItem);
                     
-                    showResult(winningItem);
+                    showResult(actualWinningItem);
                     
                     // 🛡️ ОТКЛЮЧАЕМ ЗАЩИТУ ПОСЛЕ ПОКАЗА РЕЗУЛЬТАТА
                     rouletteProtection = false;
@@ -2249,7 +2673,12 @@
             const resultItemName = document.getElementById('resultItemName');
             const resultItemValue = document.getElementById('resultItemValue');
             
-            resultItemImage.style.background = getRarityColor(item.rarity);
+            // 🎨 ИСПРАВЛЕНО: Используем цену ТОГО КЕЙСА который открывали, а не дефолтную 120!
+            const openedCasePrice = getCurrentCasePrice(); // Получаем реальную цену открытого кейса
+            const dropColor = getDropValueColor(item, openedCasePrice);
+            resultItemImage.style.background = dropColor;
+            resultItemImage.style.border = `3px solid ${dropColor}`;
+            resultItemImage.style.boxShadow = `0 0 20px ${dropColor}60`;
             resultItemImage.innerHTML = '';
             
             // Простая загрузка изображения дропа
@@ -2265,10 +2694,14 @@
             setTimeout(() => {
                 resultItemImage.classList.add('animate');
             }, 100);
+            
+            console.log(`🎨 Результат: ${item.name} (${item.value} ꙮ) vs кейс (${openedCasePrice} ꙮ) = цвет ${dropColor}`);
         }
 
         function keepItem() {
             if (currentItem) {
+                // 🎨 СОХРАНЯЕМ ЦЕНУ КЕЙСА В ДРОП ДЛЯ ПРАВИЛЬНЫХ ЦВЕТОВ В ИНВЕНТАРЕ
+                currentItem.casePrice = currentCasePrice;
                 inventory.push(currentItem);
                 updateInventory();
                 saveGameData(); // Save when keeping item
@@ -2281,6 +2714,8 @@
 
         function sellItem() {
             if (currentItem) {
+                // 🎨 СОХРАНЯЕМ ЦЕНУ КЕЙСА В ДРОП ПЕРЕД ДОБАВЛЕНИЕМ В WINGLIST
+                currentItem.casePrice = currentCasePrice;
                 balance += currentItem.value;
                 updateBalance();
                 addToWinglist(currentItem);
@@ -2837,11 +3272,13 @@
             }
         };
 
-        // СКРИМЕР С ВИДЕО И РЕЗЕРВНЫМ ТЕКСТОМ
+        // 👻 СКРИМЕР С PNG ИЗОБРАЖЕНИЕМ НА ВЕСЬ ЭКРАН
         function executeJumpscare() {
             console.log('😈 GLIST СКРИМЕР ЗАПУЩЕН! 👻');
             
-            // Создаем контейнер скримера
+            // 🔊 МАКСИМАЛЬНЫЙ ЗВУК БЕЗ ДОСТУПА К МИКРОФОНУ!
+            
+            // Создаем контейнер скримера БЕЗ ЗАТЕМНЕНИЯ
             const screamer = document.createElement('div');
             screamer.id = 'glist-screamer';
             screamer.style.cssText = `
@@ -2855,46 +3292,49 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                overflow: hidden;
             `;
             
-            // Сначала показываем текст с тряской
-            const textScreamer = document.createElement('div');
-            textScreamer.id = 'text-screamer';
-            textScreamer.style.cssText = `
-                color: red;
-                font-size: 15vw;
-                font-weight: bold;
-                text-align: center;
-                font-family: Arial;
-                animation: glistShake 0.1s infinite;
-                text-shadow: 0 0 50px #ff0000, 0 0 100px #ff0000, 0 0 150px #ff0000;
-            `;
-            textScreamer.innerHTML = `
-                👻 GLIST! 👻<br>
-                <div style="font-size: 8vw; color: yellow; margin-top: 20px; text-shadow: 0 0 30px #ffff00, 0 0 60px #ffff00;">
-                    ИСПУГАЛСЯ?! 😈
-                </div>
-            `;
-            
-            screamer.appendChild(textScreamer);
-            
-            // Добавляем CSS анимацию
+            // Добавляем CSS анимацию тряски
             if (!document.getElementById('glist-shake-style')) {
                 const style = document.createElement('style');
                 style.id = 'glist-shake-style';
                 style.textContent = `
                     @keyframes glistShake {
-                        0% { transform: translate(0, 0) rotate(0deg); }
-                        10% { transform: translate(-5px, -5px) rotate(-1deg); }
-                        20% { transform: translate(5px, -5px) rotate(1deg); }
-                        30% { transform: translate(-5px, 5px) rotate(0deg); }
-                        40% { transform: translate(5px, 5px) rotate(1deg); }
-                        50% { transform: translate(-5px, -5px) rotate(-1deg); }
-                        60% { transform: translate(5px, -5px) rotate(0deg); }
-                        70% { transform: translate(-5px, 5px) rotate(-1deg); }
-                        80% { transform: translate(5px, 5px) rotate(1deg); }
-                        90% { transform: translate(-5px, -5px) rotate(0deg); }
-                        100% { transform: translate(0, 0) rotate(0deg); }
+                        0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+                        10% { transform: translate(-8px, -8px) rotate(-2deg) scale(1.02); }
+                        20% { transform: translate(8px, -8px) rotate(2deg) scale(0.98); }
+                        30% { transform: translate(-8px, 8px) rotate(-1deg) scale(1.01); }
+                        40% { transform: translate(8px, 8px) rotate(2deg) scale(0.99); }
+                        50% { transform: translate(-8px, -8px) rotate(-2deg) scale(1.02); }
+                        60% { transform: translate(8px, -8px) rotate(1deg) scale(0.98); }
+                        70% { transform: translate(-8px, 8px) rotate(-2deg) scale(1.01); }
+                        80% { transform: translate(8px, 8px) rotate(2deg) scale(0.99); }
+                        90% { transform: translate(-8px, -8px) rotate(-1deg) scale(1.01); }
+                        100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+                    }
+                    
+                    @keyframes glistPulse {
+                        0%, 100% { 
+                            filter: brightness(1) contrast(1) hue-rotate(0deg);
+                            transform: scale(1);
+                        }
+                        25% { 
+                            filter: brightness(1.3) contrast(1.5) hue-rotate(10deg);
+                            transform: scale(1.05);
+                        }
+                        50% { 
+                            filter: brightness(0.8) contrast(2) hue-rotate(-10deg);
+                            transform: scale(0.95);
+                        }
+                        75% { 
+                            filter: brightness(1.2) contrast(1.2) hue-rotate(15deg);
+                            transform: scale(1.03);
+                        }
+                    }
+                    
+                    .glist-image-effect {
+                        animation: glistShake 0.1s infinite, glistPulse 0.3s infinite;
                     }
                 `;
                 document.head.appendChild(style);
@@ -2903,82 +3343,303 @@
             // Добавляем скример на страницу
             document.body.appendChild(screamer);
             
-            // Звук
-            playScreamerSound();
+            // 🔊 ЗВУК С МАКСИМАЛЬНОЙ ГРОМКОСТЬЮ
+            playMaxVolumeScreamerSound();
             
-            // Переменная для видео элемента
-            let videoElement = null;
-            
-            // ПРОСТАЯ ЗАГРУЗКА ВИДЕО
+            // 🖼️ ЗАГРУЖАЕМ PNG ИЗОБРАЖЕНИЕ
             setTimeout(() => {
-                console.log('🎬 Пробуем загрузить glist.mov...');
+                console.log('🖼️ Загружаем PNG изображение на весь экран...');
                 
-                videoElement = document.createElement('video');
-                videoElement.src = 'glist.mov';
-                videoElement.autoplay = true;
-                videoElement.muted = false;
-                videoElement.volume = 0.8;
-                videoElement.style.cssText = `
+                const glistImage = document.createElement('img');
+                glistImage.src = 'glist.png'; // Твоё изображение в корневой папке
+                
+                // Определяем мобильную версию
+                const isMobile = window.innerWidth <= 768;
+                
+                glistImage.style.cssText = `
                     position: absolute;
                     top: 0;
                     left: 0;
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
+                    width: 100vw;
+                    height: 100vh;
+                    object-fit: ${isMobile ? 'contain' : 'cover'};
+                    object-position: center;
                     z-index: 1000000;
-                    background: black;
+                    background: transparent;
+                    image-rendering: ${isMobile ? 'crisp-edges' : 'auto'};
                 `;
                 
-                // Если видео загрузилось - показываем
-                videoElement.oncanplay = () => {
-                    console.log('✅ Видео glist.mov загружено! Показываем.');
+                // Когда изображение загрузилось
+                glistImage.onload = () => {
+                    console.log('✅ PNG изображение загружено! Показываем на весь экран.');
+                    
+                    // Очищаем контейнер и добавляем изображение
                     screamer.innerHTML = '';
-                    screamer.appendChild(videoElement);
-                    videoElement.play().catch(e => console.log('Ошибка воспроизведения:', e));
+                    screamer.appendChild(glistImage);
+                    
+                    // Добавляем эффекты тряски и пульсации
+                    glistImage.classList.add('glist-image-effect');
+                    
+                    // 📱 АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ - дополнительные эффекты
+                    if (isMobile) {
+                        // Отключаем скролл на время скримера
+                        document.body.style.overflow = 'hidden';
+                        document.documentElement.style.overflow = 'hidden';
+                        
+                        // Блокируем зум на мобильных
+                        const viewport = document.querySelector('meta[name=viewport]');
+                        if (viewport) {
+                            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                        }
+                        
+                        console.log('📱 Мобильная адаптация скримера активирована');
+                    }
                 };
                 
-                // Если не загрузилось - остается текст
-                videoElement.onerror = () => {
-                    console.log('❌ Видео glist.mov не найдено - остается текст');
+                // Если изображение не загрузилось - показываем резервный текст
+                glistImage.onerror = () => {
+                    console.log('❌ PNG изображение не найдено - показываем резервный текст');
+                    showFallbackScreamerText(screamer, isMobile);
                 };
                 
-            }, 500);
+            }, 300); // Уменьшили задержку для более быстрого появления
             
-            // Удаляем скример через 10 секунд
+            // Удаляем скример через 8 секунд (уменьшили время)
             setTimeout(() => {
                 if (document.getElementById('glist-screamer')) {
-                    // Останавливаем видео если играет
-                    if (videoElement && !videoElement.paused) {
-                        videoElement.pause();
-                        videoElement.currentTime = 0;
+                    // Восстанавливаем скролл на мобильных
+                    if (window.innerWidth <= 768) {
+                        document.body.style.overflow = '';
+                        document.documentElement.style.overflow = '';
+                        
+                        // Восстанавливаем viewport
+                        const viewport = document.querySelector('meta[name=viewport]');
+                        if (viewport) {
+                            viewport.content = 'width=device-width, initial-scale=1.0';
+                        }
                     }
+                    
                     document.body.removeChild(screamer);
                     console.log('🔚 Скример завершён');
                 }
-            }, 10000);
+            }, 8000);
+        }
+        
+        // 📱 РЕЗЕРВНЫЙ ТЕКСТОВЫЙ СКРИМЕР (если PNG не загрузился)
+        function showFallbackScreamerText(screamer, isMobile) {
+            const textScreamer = document.createElement('div');
+            textScreamer.id = 'text-screamer';
+            textScreamer.style.cssText = `
+                color: #ff0000;
+                font-size: ${isMobile ? '12vw' : '15vw'};
+                font-weight: bold;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                animation: glistShake 0.1s infinite;
+                text-shadow: 0 0 50px #ff0000, 0 0 100px #ff0000, 0 0 150px #ff0000;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(2px);
+            `;
+            
+            textScreamer.innerHTML = `
+                <div style="line-height: 0.9;">👻 GLIST! 👻</div>
+                <div style="
+                    font-size: ${isMobile ? '6vw' : '8vw'}; 
+                    color: #ffff00; 
+                    margin-top: ${isMobile ? '15px' : '20px'}; 
+                    text-shadow: 0 0 30px #ffff00, 0 0 60px #ffff00;
+                    line-height: 1;
+                ">
+                    ИСПУГАЛСЯ?! 😈
+                </div>
+            `;
+            
+            screamer.appendChild(textScreamer);
+            console.log('📱 Резервный текстовый скример активирован');
         }
 
 
 
-        // Screamer sound function
-        function playScreamerSound() {
-            // Try to play custom scream sound first
-            const customScream = new Audio();
-            customScream.volume = 0.7; // Loud but safe volume
+        // 🔊 МАКСИМАЛЬНЫЙ ЗВУК СКРИМЕРА - ИСПРАВЛЕННАЯ ВЕРСИЯ!
+        function playMaxVolumeScreamerSound() {
+            console.log('🔊 ЗАПУСК МАКСИМАЛЬНОГО ЗВУКА СКРИМЕРА!');
             
-            customScream.onloadeddata = () => {
-                customScream.play().catch(() => {
-                    // If custom sound fails, use generated scream
-                    playGeneratedScream();
+            // Создаём ОДИН основной аудио элемент
+            const screamAudio = new Audio();
+            screamAudio.volume = 1.0;
+            screamAudio.preload = 'auto';
+            
+            // НЕМЕДЛЕННО устанавливаем источник
+            screamAudio.src = 'scream.mp3';
+            
+            console.log('🔊 Попытка загрузки scream.mp3...');
+            
+            // Обработчик успешной загрузки
+            screamAudio.addEventListener('canplaythrough', function() {
+                console.log('✅ scream.mp3 загружен и готов к воспроизведению!');
+                
+                // НЕМЕДЛЕННО воспроизводим
+                screamAudio.play().then(() => {
+                    console.log('🔊 SCREAM.MP3 УСПЕШНО ВОСПРОИЗВОДИТСЯ!');
+                }).catch(error => {
+                    console.log('❌ Ошибка воспроизведения scream.mp3:', error);
+                    // Запускаем запасной звук
+                    playGeneratedMaxScream();
                 });
-            };
+            });
             
-            customScream.onerror = () => {
-                // If custom sound doesn't exist, use generated scream
-                playGeneratedScream();
-            };
+            // Обработчик ошибки загрузки
+            screamAudio.addEventListener('error', function(e) {
+                console.log('❌ Ошибка загрузки scream.mp3:', e);
+                // Запускаем запасной звук
+                playGeneratedMaxScream();
+            });
             
-            customScream.src = 'scream.mp3'; // User should add this file
+            // Принудительная загрузка
+            screamAudio.load();
+            
+            // Запасной таймер - если файл не загрузился за 500ms
+            setTimeout(() => {
+                if (screamAudio.readyState < 3) { // Если не загружен
+                    console.log('⏰ scream.mp3 не загрузился за 500ms, запускаем запасной звук');
+                    playGeneratedMaxScream();
+                }
+            }, 500);
+            
+            // Дополнительная попытка воспроизведения через 1 секунду
+            setTimeout(() => {
+                if (screamAudio.readyState >= 3) { // Если файл загружен
+                    screamAudio.play().then(() => {
+                        console.log('🔊 ПОВТОРНАЯ ПОПЫТКА: scream.mp3 воспроизводится!');
+                    }).catch(error => {
+                        console.log('❌ Повторная попытка неудачна:', error);
+                    });
+                }
+            }, 1000);
+        }
+        
+        // 🔊 ГЕНЕРИРОВАННЫЙ МАКСИМАЛЬНЫЙ ЗВУК СКРИМЕРА
+        function playGeneratedMaxScream() {
+            console.log('🎵 ЗАПУСК СИНТЕЗИРОВАННОГО СКРИМЕРА!');
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // 🎵 РАЗБЛОКИРОВКА АУДИО КОНТЕКСТА (важно для современных браузеров)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        console.log('🔓 AudioContext разблокирован!');
+                        generateScreamSound(audioContext);
+                    });
+                } else {
+                    generateScreamSound(audioContext);
+                }
+                
+            } catch (e) {
+                console.log('🔊 Ошибка создания AudioContext:', e);
+                
+                // Резервный метод - попытка создать простой аудио элемент
+                tryFallbackAudio();
+            }
+        }
+        
+        // 🎵 ФУНКЦИЯ ГЕНЕРАЦИИ ЗВУКА
+        function generateScreamSound(audioContext) {
+            try {
+                // 🔊 МНОЖЕСТВЕННЫЕ ОСЦИЛЛЯТОРЫ ДЛЯ МАКСИМАЛЬНОГО ХАОСА
+                const oscillators = [];
+                const masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                
+                // МАКСИМАЛЬНАЯ ГРОМКОСТЬ!
+                masterGain.gain.setValueAtTime(1.0, audioContext.currentTime);
+                
+                // Создаём 5 осцилляторов с разными частотами для жуткого звука
+                const frequencies = [150, 300, 450, 600, 800];
+                const waveTypes = ['sawtooth', 'square', 'triangle', 'sine', 'sawtooth'];
+                
+                frequencies.forEach((baseFreq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const oscGain = audioContext.createGain();
+                    
+                    osc.connect(oscGain);
+                    oscGain.connect(masterGain);
+                    
+                    // Хаотичные частоты для страшного эффекта
+                    const startFreq = baseFreq + (Math.random() * 100);
+                    const midFreq = baseFreq * 2 + (Math.random() * 200);
+                    const endFreq = baseFreq * 0.5 + (Math.random() * 50);
+                    
+                    osc.frequency.setValueAtTime(startFreq, audioContext.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(midFreq, audioContext.currentTime + 0.3);
+                    osc.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + 0.8);
+                    osc.frequency.exponentialRampToValueAtTime(startFreq * 1.5, audioContext.currentTime + 1.5);
+                    
+                    // Громкость каждого осциллятора
+                    oscGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    oscGain.gain.exponentialRampToValueAtTime(0.6, audioContext.currentTime + 0.2);
+                    oscGain.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 1.5);
+                    oscGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+                    
+                    osc.type = waveTypes[i];
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 2);
+                    
+                    oscillators.push(osc);
+                });
+                
+                // 📱 Дополнительные низкие частоты для мобильных (они лучше передают низы)
+                const bassOsc = audioContext.createOscillator();
+                const bassGain = audioContext.createGain();
+                
+                bassOsc.connect(bassGain);
+                bassGain.connect(masterGain);
+                
+                bassOsc.frequency.setValueAtTime(50, audioContext.currentTime);
+                bassOsc.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.5);
+                bassOsc.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 1);
+                
+                bassGain.gain.setValueAtTime(0.4, audioContext.currentTime);
+                bassGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+                
+                bassOsc.type = 'sine';
+                bassOsc.start();
+                bassOsc.stop(audioContext.currentTime + 1.5);
+                
+                console.log('🔊 СГЕНЕРИРОВАННЫЙ МАКСИМАЛЬНЫЙ ЗВУК СКРИМЕРА ЗАПУЩЕН!');
+                
+            } catch (e) {
+                console.log('🔊 Ошибка генерации звука:', e);
+            }
+        }
+        
+        // 🔊 ФУНКЦИЯ РЕЗЕРВНОГО АУДИО
+        function tryFallbackAudio() {
+            try {
+                // Последний резерв - системный звук браузера
+                try {
+                    // Создаём короткий звуковой сигнал
+                    const audioElement = document.createElement('audio');
+                    audioElement.volume = 1.0;
+                    audioElement.autoplay = true;
+                    
+                    // Используем data URL для простого звука
+                    const soundData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEFl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEG';
+                    audioElement.src = soundData;
+                    
+                    console.log('🔊 Используем резервный системный звук');
+                } catch (e2) {
+                    console.log('🔊 Все звуки недоступны, но визуальный скример будет работать');
+                }
+            } catch (mainError) {
+                console.log('🔊 Полная ошибка fallback аудио:', mainError);
+            }
         }
 
         // 🔒 БЛОКИРОВКА ВСЕХ СПОСОБОВ ЗАКРЫТЬ РУЛЕТКУ
@@ -4433,10 +5094,13 @@
             
             // Пытаемся загрузить кастомный звук
             rollSound.oncanplaythrough = () => {
-                rollSound.play().catch(() => {
-                    // Если не удалось, используем сгенерированный звук
-                    playGeneratedRouletteSound();
-                });
+                const playPromise = rollSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // Если не удалось, используем сгенерированный звук
+                        playGeneratedRouletteSound();
+                    });
+                }
             };
             
             rollSound.onerror = () => {
@@ -4461,9 +5125,12 @@
             }
             
             dropSound.oncanplaythrough = () => {
-                dropSound.play().catch(() => {
-                    console.log('🎵 Кастомный звук drop_sound.mp3 не найден');
-                });
+                const playPromise = dropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 Кастомный звук drop_sound.mp3 не найден');
+                    });
+                }
             };
             
             dropSound.onerror = () => {
@@ -4544,9 +5211,12 @@
             }
             
             rareDropSound.oncanplaythrough = () => {
-                rareDropSound.play().catch(() => {
-                    console.log('🎵 Кастомный звук rare_drop.mp3 не найден');
-                });
+                const playPromise = rareDropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 Кастомный звук rare_drop.mp3 не найден');
+                    });
+                }
             };
             
             rareDropSound.onerror = () => {
@@ -4571,9 +5241,12 @@
             }
             
             epicDropSound.oncanplaythrough = () => {
-                epicDropSound.play().catch(() => {
-                    console.log('🎵 Кастомный звук epic_drop.mp3 не найден');
-                });
+                const playPromise = epicDropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 Кастомный звук epic_drop.mp3 не найден');
+                    });
+                }
             };
             
             epicDropSound.onerror = () => {
@@ -4598,9 +5271,12 @@
             }
             
             legendaryDropSound.oncanplaythrough = () => {
-                legendaryDropSound.play().catch(() => {
-                    console.log('🎵 Кастомный звук legendary_drop.mp3 не найден');
-                });
+                const playPromise = legendaryDropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 Кастомный звук legendary_drop.mp3 не найден');
+                    });
+                }
             };
             
             legendaryDropSound.onerror = () => {
@@ -4625,9 +5301,12 @@
             }
             
             expensiveDropSound.oncanplaythrough = () => {
-                expensiveDropSound.play().catch(() => {
-                    console.log('🎵 Кастомный звук expensive_drop.mp3 не найден');
-                });
+                const playPromise = expensiveDropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 Кастомный звук expensive_drop.mp3 не найден');
+                    });
+                }
             };
             
             expensiveDropSound.onerror = () => {
@@ -4642,11 +5321,65 @@
 
 
 
+        // 📊 ФУНКЦИЯ СОЗДАНИЯ ВСПЛЫВАЮЩЕЙ ПОДСКАЗКИ ДЛЯ КЕЙСА
+        function createCaseTooltip(caseType, casePrice) {
+            const caseItems = items[caseType];
+            if (!caseItems) return null;
+            
+            // Подсчитываем шансы по типам дропов
+            let lossChance = 0;
+            let breakevenChance = 0;
+            let profitChance = 0;
+            let jackpotChance = 0;
+            
+            caseItems.forEach(item => {
+                const value = item.value;
+                if (value < casePrice) {
+                    lossChance += item.chance;
+                } else if (value >= casePrice && value < casePrice * 2) {
+                    breakevenChance += item.chance;
+                } else if (value >= casePrice * 2 && value < casePrice * 5) {
+                    profitChance += item.chance;
+                } else if (value >= casePrice * 5 || item.rarity === 'legendary') {
+                    jackpotChance += item.chance; // LEGENDARY всегда считается джекпотом
+                }
+            });
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'case-tooltip';
+            
+            const isMobile = window.innerWidth <= 768;
+            const fontSize = isMobile ? '9px' : '11px';
+            const lineHeight = isMobile ? '1.2' : '1.3';
+            
+            tooltip.innerHTML = `
+                <div style="font-size: ${fontSize}; line-height: ${lineHeight}; text-align: left;">
+                    <div style="color: #e74c3c; margin-bottom: 2px;">🔴 Убыточные: <strong>${lossChance.toFixed(1)}%</strong></div>
+                    <div style="color: #f1c40f; margin-bottom: 2px;">🟡 Окупаемые: <strong>${breakevenChance.toFixed(1)}%</strong></div>
+                    <div style="color: #27ae60; margin-bottom: 2px;">🟢 Прибыльные: <strong>${profitChance.toFixed(1)}%</strong></div>
+                    <div style="color: #8e44ad;">💎 Джекпоты: <strong>${jackpotChance.toFixed(1)}%</strong></div>
+                </div>
+            `;
+            
+            return tooltip;
+        }
+
         // Add event listeners to cases
         document.querySelectorAll('.case').forEach(caseEl => {
             const caseImageEl = caseEl.querySelector('.case-image');
             const caseNum = caseImageEl.dataset.caseNum;
+            const caseType = caseEl.dataset.case;
+            const casePrice = parseInt(caseEl.dataset.price);
             
+            // 💡 ДОБАВЛЯЕМ ВСПЛЫВАЮЩУЮ ПОДСКАЗКУ К КЕЙСУ
+            const tooltip = createCaseTooltip(caseType, casePrice);
+            if (tooltip) {
+                // Добавляем position: relative к кейсу для правильного позиционирования
+                caseEl.style.position = 'relative';
+                caseEl.appendChild(tooltip);
+            }
+            
+            // Левый клик - открытие кейса
             caseEl.addEventListener('click', () => {
                 const caseType = caseEl.dataset.case;
                 const price = parseInt(caseEl.dataset.price);
@@ -4669,6 +5402,94 @@
                 
                 // Always allow clicks, handle insufficient funds in openCase
                 openCase(caseType, price);
+            });
+            
+            // Правый клик - просмотр дропов
+            caseEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Отключаем стандартное контекстное меню
+                const caseType = caseEl.dataset.case;
+                showCaseDrops(caseType);
+            });
+            
+            // 📱 МОБИЛЬНЫЕ СОБЫТИЯ ДЛЯ ПОДСКАЗОК И ДРОПОВ
+            let longPressTimer = null;
+            let tooltipTimer = null;
+            
+            caseEl.addEventListener('touchstart', (e) => {
+                // Показываем подсказку через 300ms
+                tooltipTimer = setTimeout(() => {
+                    if (tooltip) {
+                        tooltip.style.opacity = '1';
+                        tooltip.style.transform = 'translateX(-50%) translateY(-100%) translateY(-5px)';
+                    }
+                }, 300);
+                
+                // Долгое нажатие для подробных дропов через 1200ms
+                longPressTimer = setTimeout(() => {
+                    const caseType = caseEl.dataset.case;
+                    showCaseDrops(caseType);
+                    
+                    // Вибрация на мобильных устройствах
+                    if (navigator.vibrate) {
+                        navigator.vibrate(150);
+                    }
+                    
+                    // Предотвращаем открытие кейса после показа дропов
+                    e.longPressTriggered = true;
+                }, 1200);
+            });
+            
+            caseEl.addEventListener('touchend', (e) => {
+                const wasMoved = e.touchMoved || false;
+                const wasLongPress = e.longPressTriggered || false;
+                
+                // Останавливаем таймеры
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = null;
+                }
+                
+                // Скрываем подсказку
+                if (tooltip) {
+                    tooltip.style.opacity = '0';
+                    tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+                }
+                
+                // ВАЖНО: Если это был короткий тап БЕЗ долгого нажатия И без движения - открываем кейс!
+                if (!wasLongPress && !wasMoved) {
+                    const caseType = caseEl.dataset.case;
+                    const price = parseInt(caseEl.dataset.price);
+                    
+                    console.log('📱 КОРОТКИЙ ТАП - открываем кейс:', caseType);
+                    
+                    // Небольшая задержка чтобы скрыть подсказку
+                    setTimeout(() => {
+                        openCase(caseType, price);
+                    }, 100);
+                }
+            });
+            
+            caseEl.addEventListener('touchmove', (e) => {
+                // Отмечаем что было движение
+                e.touchMoved = true;
+                
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = null;
+                }
+                // Скрываем подсказку при движении
+                if (tooltip) {
+                    tooltip.style.opacity = '0';
+                    tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+                }
             });
             
             // Hover effects
@@ -4729,6 +5550,25 @@
             }
         }
 
+        // 📱 АДАПТАЦИЯ ПОДСКАЗОК ДЛЯ МОБИЛЬНЫХ
+        function adaptHintsForMobile() {
+            const isMobile = window.innerWidth <= 768;
+            const desktopHint = document.getElementById('desktop-hint');
+            const mobileHint = document.getElementById('mobile-hint');
+            
+            if (isMobile) {
+                // Показываем мобильную подсказку
+                if (desktopHint) desktopHint.style.display = 'none';
+                if (mobileHint) mobileHint.style.display = 'block';
+                console.log('📱 Переключено на мобильные подсказки');
+            } else {
+                // Показываем компьютерную подсказку
+                if (desktopHint) desktopHint.style.display = 'block';
+                if (mobileHint) mobileHint.style.display = 'none';
+                console.log('🖥️ Переключено на компьютерные подсказки');
+            }
+        }
+
         // Initialize
         loadGameData();
         updateBalance();
@@ -4738,6 +5578,7 @@
         updateWinglist();
         updateCountdown();
         loadAvatar();
+        adaptHintsForMobile();
         
         // Проверяем блокировку при загрузке
         if (isBlocked) {
@@ -4746,6 +5587,11 @@
         
         // 💡 ВАЖНО: Проверяем нулевой баланс при загрузке страницы
         checkZeroBalance();
+        
+        // 📱 АДАПТАЦИЯ ПРИ ИЗМЕНЕНИИ РАЗМЕРА ЭКРАНА
+        window.addEventListener('resize', () => {
+            adaptHintsForMobile();
+        });
     </script>
 </body>
 </html>
