@@ -1759,7 +1759,7 @@
                 
                 // 🟡 ОКУПАЕМЫЕ ДРОПЫ (36% общий шанс)
                 { name: 'Плётка', image: 'dropcase5_8', rarity: 'rare', value: 160, chance: 20 },
-                { name: 'Маньячный Набор', image: 'dropcase5_10', rarity: 'rare', value: 200, chance: 16 },
+                { name: 'Маньячный Набор', image: 'dropcase5_10', rarity: 'legendary', value: 2280, chance: 16 },
                 
                 // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (18% общий шанс)
                 { name: 'Муравей', image: 'dropcase5_4', rarity: 'epic', value: 550, chance: 10 },
@@ -5795,6 +5795,13 @@ ${(() => {
             
             console.log(`🎵 Проверяем звук для дропа: ${item.name} (${rarity}, ${value} ꙮ)`);
             
+            // 🎬 СПЕЦИАЛЬНЫЙ ЗВУК ДЛЯ ФЛЭШБЕКА
+            if (item.name === 'Флэшбек') {
+                console.log('🎬 Воспроизводим специальный звук для Флэшбека!');
+                playFlashbackDropSound();
+                return;
+            }
+            
             // Определяем приоритет звуков:
             // 1. Легендарный дроп (legendary)
             // 2. Очень дорогой дроп (500+ ꙮ)
@@ -5853,6 +5860,37 @@ ${(() => {
         
         function playExpensiveDropSound() {
             expensiveDropSound = playSpecialSound('expensive', 0.75, expensiveDropSound);
+        }
+        
+        // 🎵 ЗВУК ДЛЯ ФЛЭШБЕКА
+        let flashbackDropSound = null;
+        function playFlashbackDropSound() {
+            if (!flashbackDropSound) {
+                flashbackDropSound = new Audio();
+                flashbackDropSound.volume = 0.8;
+            }
+            
+            // Останавливаем звук рулетки
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            flashbackDropSound.oncanplaythrough = () => {
+                const playPromise = flashbackDropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log('🎵 flashback_drop.mp3 не найден - звук пропущен');
+                    });
+                }
+            };
+            
+            flashbackDropSound.onerror = () => {
+                console.log('🎵 flashback_drop.mp3 не найден - звук пропущен');
+            };
+            
+            console.log('🎵 Пытаемся загрузить flashback_drop.mp3...');
+            flashbackDropSound.src = 'flashback_drop.mp3';
         }
         
 
