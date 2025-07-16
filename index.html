@@ -139,18 +139,13 @@
         }
 
         #balance {
-            cursor: pointer;
+            cursor: default;
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             padding: 2px 5px;
             border-radius: 3px;
-            transition: background-color 0.2s;
-        }
-
-        #balance:hover {
-            background-color: rgba(255, 215, 0, 0.1);
         }
 
         .currency::after {
@@ -358,6 +353,43 @@
             }
         }
 
+        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ ПРЕДУПРЕЖДЕНИЯ */
+        @media (max-width: 768px) {
+            #health-warning {
+                position: relative !important;
+                top: auto !important;
+                right: auto !important;
+                left: auto !important;
+                margin: 10px auto 15px auto;
+                max-width: 300px;
+                width: 90vw;
+                padding: 12px;
+                border-radius: 10px;
+                z-index: 1001 !important;
+            }
+            
+            #health-warning div {
+                font-size: 10px !important;
+                margin-bottom: 8px !important;
+                line-height: 1.3 !important;
+            }
+            
+            #health-warning button {
+                padding: 8px 16px !important;
+                font-size: 12px !important;
+            }
+        }
+        
+        /* 🖥️ ИСПРАВЛЕНИЕ ПОЗИЦИИ НА КОМПЬЮТЕРЕ */
+        @media (min-width: 769px) {
+            #health-warning {
+                position: fixed !important;
+                top: 100px !important;
+                right: 20px !important;
+                z-index: 999 !important;
+            }
+        }
+
         /* Mobile promo section */
         @media (max-width: 768px) {
             .promo-section {
@@ -476,6 +508,139 @@
             margin-top: 20px;
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+        
+        /* 🛠️ СТИЛИ ДЛЯ РЕЖИМА РАЗРАБОТЧИКА */
+        .dev-mode-banner {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: center;
+            animation: devModeGlow 2s ease-in-out infinite;
+            box-shadow: 0 5px 20px rgba(142, 68, 173, 0.4);
+            position: relative;
+        }
+        
+        .dev-mode-banner h3 {
+            color: #ffd700;
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .dev-mode-banner p {
+            color: #fff;
+            font-size: 14px;
+            margin: 0 0 15px 0;
+            line-height: 1.3;
+        }
+        
+        .dev-mode-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .dev-btn {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .dev-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        .dev-btn.balance {
+            background: linear-gradient(145deg, #27ae60, #229954);
+        }
+        
+        .dev-btn.reset {
+            background: linear-gradient(145deg, #f39c12, #d68910);
+        }
+        
+        @keyframes devModeGlow {
+            0%, 100% { 
+                box-shadow: 0 5px 20px rgba(142, 68, 173, 0.4);
+            }
+            50% { 
+                box-shadow: 0 8px 30px rgba(142, 68, 173, 0.7), 0 0 40px rgba(255, 215, 0, 0.3);
+            }
+        }
+        
+        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ РЕЖИМА РАЗРАБОТЧИКА */
+        @media (max-width: 768px) {
+            .dev-mode-banner {
+                margin: 15px auto;
+                padding: 12px 15px;
+                max-width: 320px;
+            }
+            
+            .dev-mode-banner h3 {
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+            
+            .dev-mode-banner p {
+                font-size: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .dev-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
+        
+        /* 🚫 СТИЛИ ДЛЯ ЗАКРЫВАЕМОГО ПРЕДУПРЕЖДЕНИЯ О БАГАХ */
+        .bug-warning-banner {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: 2px solid #fff;
+            border-radius: 12px;
+            padding: 12px 40px 12px 20px;
+            margin: 0 auto 20px auto;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            animation: warningPulse 3s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .bug-warning-banner .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .bug-warning-banner .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
         }
 
         .cases-section {
@@ -1268,6 +1433,51 @@
         </div>
     </div>
 
+    <!-- ⚠️ ПРЕДУПРЕЖДЕНИЕ О ЗДОРОВЬЕ -->
+    <div id="health-warning" style="
+        position: fixed;
+        top: 180px;
+        right: 20px;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        border: 2px solid #fff;
+        border-radius: 12px;
+        padding: 15px;
+        max-width: 260px;
+        z-index: 999;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        animation: warningPulse 3s ease-in-out infinite;
+        display: none;
+    ">
+        <div style="
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        ">
+            ⚠️ <span style="color: #ffeb3b;">ВНИМАНИЕ</span> ⚠️<br>
+            Мы максимально осуждаем алкоголь/курение/употребление наркотиков!<br>
+            <span style="color: #ffd700;">Сайт создан исключительно в развлекательных целях!</span>
+        </div>
+        <button onclick="closeHealthWarning()" style="
+            background: #fff;
+            color: #e74c3c;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            👍 Понятно!
+        </button>
+    </div>
+
     <div class="container">
         <header class="header">
             <div></div>
@@ -1276,7 +1486,7 @@
                 <div class="profile-avatar" id="profileAvatar" onclick="handleAvatarClick()">👤</div>
                 <input type="file" class="avatar-upload-input" id="avatarUploadInput" accept="image/*" onchange="handleAvatarUpload(event)">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <div class="currency">Баланс: <span id="balance" onclick="handleBalanceClick(event)" title="Тройной клик для редактирования">1000</span></div>
+                    <div class="currency">Баланс: <span id="balance">1000</span></div>
                     <button id="debtButton" onclick="takeDebt()" style="
                         background: linear-gradient(145deg, #e74c3c, #c0392b);
                         color: white;
@@ -1373,18 +1583,24 @@
 
         </div>
 
+        <!-- 🛠️ РЕЖИМ РАЗРАБОТЧИКА -->
+        <div id="dev-mode-banner" class="dev-mode-banner" style="display: none;">
+            <h3>🛠️ РЕЖИМ РАЗРАБОТЧИКА АКТИВИРОВАН! 🛠️</h3>
+            <p>Доступны читерские функции для тестирования</p>
+            <div class="dev-mode-controls">
+                <button class="dev-btn balance" onclick="devAddBalance()">💰 +1000 ꙮ</button>
+                <button class="dev-btn balance" onclick="devSetBalance()">✏️ Изменить баланс</button>
+                <button class="dev-btn reset" onclick="devResetPromocodes()">🔄 Сброс промокодов</button>
+                <button class="dev-btn reset" onclick="devResetRating()">📈 Сброс рейтинга</button>
+                <button class="dev-btn reset" onclick="devResetAll()">🗑️ Полный сброс</button>
+            </div>
+        </div>
+
         <div class="cases-title">СЕРИЙНЫЕ КЕЙСЫ</div>
-        <div style="
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: 2px solid #fff;
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin: 0 auto 20px auto;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-            animation: warningPulse 3s ease-in-out infinite;
-        ">
+        
+        <!-- 🚫 ЗАКРЫВАЕМОЕ ПРЕДУПРЕЖДЕНИЕ О БАГАХ -->
+        <div id="bug-warning-banner" class="bug-warning-banner">
+            <button class="close-btn" onclick="closeBugWarning()" title="Закрыть навсегда">✕</button>
             <div style="
                 color: #fff;
                 font-size: 14px;
@@ -1395,6 +1611,8 @@
                 ⚠️ Могут быть баги! Сообщите о баге в наш телеграм канал!
             </div>
         </div>
+        
+
         <!-- 🖥️ ПОДСКАЗКА ДЛЯ КОМПЬЮТЕРА -->
         <div style="
             text-align: center;
@@ -1624,8 +1842,7 @@
         ];
         let userNickname = 'Игрок';
         let userAvatar = null; // Хранит base64 данные аватара
-        let balanceClickCount = 0;
-        let balanceClickTimer = null;
+        // Переменные для кликов по балансу убраны
         
         // Защита от мискликов
         let rouletteProtection = false; // Флаг защиты рулетки
@@ -1636,7 +1853,7 @@
         let debtCasesLeft = 0; // Сколько кейсов осталось до списания
         let debtAmount = 500; // Сумма к возврату (по умолчанию 500)
         let isBlocked = false; // Заблокирован ли доступ к кейсам
-        let hasBadCredit = false; // Плохой кредитный рейтинг (не вернул долг хотя бы раз)
+        let socialRating = 100; // Социальный рейтинг (по умолчанию 100)
 
         // 🖼️ ЗАГРУЗКА ИЗОБРАЖЕНИЙ
         function loadDropImage(imageElement, imageName) {
@@ -1670,43 +1887,45 @@
             imageElement.textContent = '?';
         }
         
-        // 🎵 ИСПРАВЛЕННЫЙ ЗВУК ДЛЯ ФЛЭШБЕКА
+        // 🎵 ЗВУК ДЛЯ ФЛЭШБЕКА
         let flashbackDropSound = null;
         function playFlashbackDropSound() {
-            console.log('🎬 Запуск уникального звука Флэшбека...');
+            console.log('🎬 Запуск звука Флэшбека...');
+            
+            // ПОЛНОЕ УНИЧТОЖЕНИЕ звука рулетки
+            try {
+                if (rollSound) {
+                    rollSound.pause();
+                    rollSound.currentTime = 0;
+                    rollSound.loop = false; // Отключаем зацикливание
+                    rollSound.oncanplaythrough = null;
+                    rollSound.onerror = null;
+                    rollSound.onended = null;
+                    rollSound.onloadeddata = null;
+                    rollSound.src = ''; // Очищаем источник
+                    rollSound.load(); // Принудительно перезагружаем пустой источник
+                    rollSound = null; // Полностью обнуляем ссылку
+                    console.log('🔇 Звук рулетки ПОЛНОСТЬЮ УНИЧТОЖЕН перед Флэшбеком');
+                }
+            } catch (e) {
+                console.log('⚠️ Ошибка уничтожения звука рулетки перед Флэшбеком:', e);
+                rollSound = null; // Обнуляем в любом случае
+            }
             
             // Создаем НОВЫЙ аудио объект каждый раз
             flashbackDropSound = new Audio();
             flashbackDropSound.volume = 0.8;
             flashbackDropSound.preload = 'auto';
-            
-            // Останавливаем звук рулетки
-            if (rollSound && !rollSound.paused) {
-                rollSound.pause();
-                rollSound.currentTime = 0;
-            }
-            
-            flashbackDropSound.addEventListener('canplaythrough', function onCanPlay() {
-                flashbackDropSound.removeEventListener('canplaythrough', onCanPlay);
-                console.log('✅ flashback_drop.mp3 загружен, воспроизводим...');
-                
-                const playPromise = flashbackDropSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('🔊 Звук Флэшбека успешно воспроизводится!');
-                    }).catch(error => {
-                        console.log('❌ Ошибка воспроизведения flashback_drop.mp3:', error);
-                    });
-                }
-            });
-            
-            flashbackDropSound.addEventListener('error', function onError() {
-                console.log('❌ flashback_drop.mp3 не найден');
-            });
-            
-            // Устанавливаем источник и загружаем
             flashbackDropSound.src = 'flashback_drop.mp3';
-            flashbackDropSound.load();
+            
+            const playPromise = flashbackDropSound.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('🔊 flashback_drop.mp3 успешно воспроизводится!');
+                }).catch(() => {
+                    console.log('❌ flashback_drop.mp3 не найден - Флэшбек без звука');
+                });
+            }
         }
 
         // Простая система файлов без дополнительной обработки названий
@@ -1890,7 +2109,7 @@
                 { name: 'Дроп 10-1', image: 'dropcase10_1', rarity: 'rare', value: 180, chance: 22 },
                 { name: 'Дроп 10-7', image: 'dropcase10_7', rarity: 'rare', value: 240, chance: 18 },
                 
-                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
+                //🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
                 { name: 'Дроп 10-8', image: 'dropcase10_8', rarity: 'epic', value: 340, chance: 10 },
                 { name: 'Дроп 10-4', image: 'dropcase10_4', rarity: 'epic', value: 450, chance: 6 },
                 { name: 'Дроп 10-10', image: 'dropcase10_10', rarity: 'epic', value: 580, chance: 3 },
@@ -2107,6 +2326,11 @@
                 balance -= debtAmount;
                 const paidAmount = debtAmount;
                 
+                // Восстанавливаем социальный рейтинг
+                const oldRating = socialRating;
+                socialRating = Math.min(100, socialRating + 15); // Восстанавливаем рейтинг на 15
+                const ratingGain = socialRating - oldRating;
+                
                 // Сбрасываем долг
                 hasDebt = false;
                 debtCasesLeft = 0;
@@ -2119,9 +2343,9 @@
                 saveGameData();
                 
                 // Показываем сообщение об успешном погашении
-                showDebtPaymentMessage(paidAmount, oldDebtAmount);
+                showDebtPaymentMessage(paidAmount, oldDebtAmount, ratingGain);
                 
-                console.log(`✅ Госдолг автоматически погашен! Списано: ${paidAmount} ꙮ, остаток: ${balance} ꙮ`);
+                console.log(`✅ Госдолг автоматически погашен! Списано: ${paidAmount} ꙮ, остаток: ${balance} ꙮ, рейтинг: +${ratingGain}`);
             }
         }
         
@@ -2596,26 +2820,201 @@
 
         // 🔊 ЗВУК ОШИБКИ ПРИ НЕДОСТАТКЕ СРЕДСТВ
         function playErrorSound() {
-            if (!errorSound) {
-                errorSound = new Audio();
-                errorSound.volume = 0.5;
+            const errorAudio = new Audio();
+            errorAudio.volume = 0.5;
+            errorAudio.src = 'error.mp3';
+            
+            const playPromise = errorAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('🔊 error.mp3 успешно воспроизводится!');
+                }).catch(() => {
+                    console.log('❌ error.mp3 не найден - только визуальная обратная связь');
+                });
+            }
+        }
+
+        // Простая система звуков - только основные
+        let rollSound = null;
+        let dropSound = null;
+        let errorSound = null;
+
+        // 🔊 ИСПРАВЛЕННЫЙ ЗВУК РУЛЕТКИ
+        function playRouletteSound() {
+            console.log('🎵 Запуск звука рулетки...');
+            
+            // Создаем новый аудио объект если нужно
+            if (!rollSound) {
+                rollSound = new Audio();
+                rollSound.volume = 0.4;
+                rollSound.loop = false;
+                rollSound.preload = 'auto';
             }
             
-            errorSound.oncanplaythrough = () => {
-                const playPromise = errorSound.play();
+            // Останавливаем предыдущий звук если играет
+            if (!rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            // СРАЗУ устанавливаем источник
+            rollSound.src = 'roulette_sound.mp3';
+            
+            // Обработчик успешной загрузки
+            rollSound.addEventListener('canplaythrough', function onCanPlay() {
+                rollSound.removeEventListener('canplaythrough', onCanPlay);
+                console.log('✅ roulette_sound.mp3 загружен, воспроизводим...');
+                
+                const playPromise = rollSound.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                        console.log('🎵 error.mp3 не найден - показываем только визуальную обратную связь');
+                    playPromise.then(() => {
+                        console.log('🔊 Звук рулетки успешно воспроизводится!');
+                    }).catch(error => {
+                        console.log('❌ Ошибка воспроизведения звука рулетки:', error);
                     });
                 }
-            };
+            });
             
-            errorSound.onerror = () => {
-                console.log('🎵 error.mp3 не найден');
-            };
+            // Обработчик ошибки
+            rollSound.addEventListener('error', function onError() {
+                console.log('❌ roulette_sound.mp3 не найден - рулетка без звука');
+            });
             
-            errorSound.src = 'error.mp3';
-            console.log('⚠️ Недостаточно средств для открытия кейса - воспроизводим error.mp3');
+            // Принудительная загрузка
+            rollSound.load();
+        }
+
+        // 🎵 ИСПРАВЛЕННЫЙ ЗВУК ВЫПАДЕНИЯ ДРОПА
+        function playDropSound() {
+            console.log('🎵 Запуск звука дропа...');
+            
+            // Создаем НОВЫЙ аудио объект каждый раз - это предотвратит повторы
+            dropSound = new Audio();
+            dropSound.volume = 0.6;
+            dropSound.preload = 'auto';
+            
+            // Останавливаем звук рулетки если играет
+            if (rollSound && !rollSound.paused) {
+                rollSound.pause();
+                rollSound.currentTime = 0;
+            }
+            
+            dropSound.addEventListener('canplaythrough', function onCanPlay() {
+                dropSound.removeEventListener('canplaythrough', onCanPlay);
+                console.log('✅ drop_sound.mp3 загружен, воспроизводим...');
+                
+                const playPromise = dropSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('🔊 Звук дропа успешно воспроизводится!');
+                    }).catch(error => {
+                        console.log('❌ Ошибка воспроизведения drop_sound.mp3:', error);
+                    });
+                }
+            });
+            
+            dropSound.addEventListener('error', function onError() {
+                console.log('❌ drop_sound.mp3 не найден');
+            });
+            
+            // Устанавливаем источник и загружаем
+            dropSound.src = 'drop_sound.mp3';
+            dropSound.load();
+        }
+        
+        // 🔇 ФУНКЦИЯ ОСТАНОВКИ ЗВУКА ДРОПА
+        function stopDropSound() {
+            if (dropSound && !dropSound.paused) {
+                dropSound.pause();
+                dropSound.currentTime = 0;
+                console.log('🔇 Звук дропа остановлен');
+            }
+            
+            // Также останавливаем уникальный звук Флэшбека
+            if (flashbackDropSound && !flashbackDropSound.paused) {
+                flashbackDropSound.pause();
+                flashbackDropSound.currentTime = 0;
+                console.log('🔇 Звук Флэшбека остановлен');
+            }
+        }
+        
+        // 🔇 УЛУЧШЕННАЯ ФУНКЦИЯ ОСТАНОВКИ ВСЕХ ЗВУКОВ
+        function stopAllSounds() {
+            console.log('🔇 Останавливаем все звуки...');
+            
+            try {
+                // Останавливаем звук рулетки
+                if (rollSound) {
+                    rollSound.pause();
+                    rollSound.currentTime = 0;
+                    // Очищаем обработчики событий
+                    rollSound.oncanplaythrough = null;
+                    rollSound.onerror = null;
+                    console.log('🔇 Звук рулетки остановлен');
+                }
+            } catch (e) {
+                console.log('⚠️ Ошибка остановки звука рулетки:', e);
+            }
+            
+            try {
+                // Останавливаем звук дропа
+                if (dropSound) {
+                    dropSound.pause();
+                    dropSound.currentTime = 0;
+                    // Очищаем обработчики событий
+                    dropSound.oncanplaythrough = null;
+                    dropSound.onerror = null;
+                    console.log('🔇 Звук дропа остановлен');
+                }
+            } catch (e) {
+                console.log('⚠️ Ошибка остановки звука дропа:', e);
+            }
+            
+            try {
+                // Останавливаем звук Флэшбека
+                if (flashbackDropSound) {
+                    flashbackDropSound.pause();
+                    flashbackDropSound.currentTime = 0;
+                    // Очищаем обработчики событий
+                    flashbackDropSound.oncanplaythrough = null;
+                    flashbackDropSound.onerror = null;
+                    console.log('🔇 Звук Флэшбека остановлен');
+                }
+            } catch (e) {
+                console.log('⚠️ Ошибка остановки звука Флэшбека:', e);
+            }
+            
+            try {
+                // Останавливаем звук ошибки
+                if (errorSound) {
+                    errorSound.pause();
+                    errorSound.currentTime = 0;
+                    errorSound.oncanplaythrough = null;
+                    errorSound.onerror = null;
+                    console.log('🔇 Звук ошибки остановлен');
+                }
+            } catch (e) {
+                console.log('⚠️ Ошибка остановки звука ошибки:', e);
+            }
+            
+            console.log('✅ Все звуки остановлены и очищены!');
+        }
+
+
+
+        // 🎵 СИСТЕМА ЗВУКОВ С УНИКАЛЬНЫМ ЗВУКОМ ДЛЯ ФЛЭШБЕКА
+        function playDropSoundByRarity(item) {
+            console.log(`🎵 Проверяем звук для дропа: ${item.name}`);
+            
+            // 🎬 СПЕЦИАЛЬНЫЙ ЗВУК ДЛЯ ФЛЭШБЕКА
+            if (item.name === 'Флэшбек') {
+                console.log('🎬 Воспроизводим специальный звук для Флэшбека!');
+                playFlashbackDropSound();
+                return;
+            }
+            
+            // Для всех остальных дропов - универсальный звук
+            playDropSound();
         }
 
         // 📊 ФУНКЦИЯ ПОКАЗА ШАНСОВ ДРОПОВ
@@ -3295,6 +3694,28 @@ ${(() => {
             
             currentItem = null;
             
+            // 🔇 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - убеждаемся что звук рулетки ПОЛНОСТЬЮ УНИЧТОЖЕН
+            setTimeout(() => {
+                try {
+                    if (rollSound) {
+                        rollSound.pause();
+                        rollSound.currentTime = 0;
+                        rollSound.loop = false;
+                        rollSound.oncanplaythrough = null;
+                        rollSound.onerror = null;
+                        rollSound.onended = null;
+                        rollSound.onloadeddata = null;
+                        rollSound.src = '';
+                        rollSound.load();
+                        rollSound = null;
+                        console.log('🔇 Дополнительное ПОЛНОЕ УНИЧТОЖЕНИЕ звука рулетки выполнено');
+                    }
+                } catch (e) {
+                    console.log('⚠️ Ошибка дополнительного уничтожения звука рулетки:', e);
+                    rollSound = null;
+                }
+            }, 100);
+            
             // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ ЗАКРЫТИЯ РУЛЕТКИ
             checkPendingBonusHint();
         }
@@ -3504,98 +3925,16 @@ ${(() => {
             }
         });
 
-        // Balance editing functionality
-        function handleBalanceClick(event) {
-            // Prevent text selection
-            event.preventDefault();
-            event.stopPropagation();
-            
-            balanceClickCount++;
-            
-            // Clear existing timer
-            if (balanceClickTimer) {
-                clearTimeout(balanceClickTimer);
-            }
-            
-            // Set timer to reset click count
-            balanceClickTimer = setTimeout(() => {
-                balanceClickCount = 0;
-            }, 800); // Increased timeout for easier triple clicking
-            
-            // Check for triple click
-            if (balanceClickCount === 3) {
-                // Triple click detected - enable balance editing
-                enableBalanceEditing();
-                balanceClickCount = 0;
-                clearTimeout(balanceClickTimer);
-            } else if (balanceClickCount === 1) {
-                // Visual feedback for first click
-                const balanceEl = document.getElementById('balance');
-                balanceEl.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
-                setTimeout(() => {
-                    balanceEl.style.backgroundColor = '';
-                }, 200);
-            }
-        }
-
-        function enableBalanceEditing() {
-            const balanceEl = document.getElementById('balance');
-            const currentBalance = balance;
-            
-            // Create input field
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.value = currentBalance;
-            input.style.cssText = `
-                background: #2c3e50;
-                color: #ffd700;
-                border: 2px solid #e74c3c;
-                border-radius: 5px;
-                padding: 2px 5px;
-                font-size: 18px;
-                font-weight: bold;
-                width: 100px;
-                text-align: center;
-            `;
-            
-            // Replace balance text with input
-            balanceEl.innerHTML = '';
-            balanceEl.appendChild(input);
-            input.focus();
-            input.select();
-            
-            // Handle input completion
-            function finishEditing() {
-                const newBalance = parseInt(input.value) || 0;
-                if (newBalance >= 0) {
-                    balance = Math.max(0, newBalance); // Prevent negative balance
-                    updateBalance();
-                    console.log(`💰 Баланс изменён на: ${balance} ꙮ`);
-                } else {
-                    // Restore original balance if invalid input
-                    balanceEl.textContent = currentBalance;
-                }
-            }
-            
-            // Listen for Enter key or blur
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    finishEditing();
-                }
-                if (e.key === 'Escape') {
-                    balanceEl.textContent = currentBalance;
-                }
-            });
-            
-            input.addEventListener('blur', finishEditing);
-            
-            // 🔥 УБРАЛ автосохранение через 5 секунд - оно мешало!
-        }
+        // Баланс больше не кликабельный - убрали все функции редактирования
 
         // Promocode system
         let usedPromocodes = [];
         let promocodeClickCount = 0;
         let promocodeClickTimer = null;
+        
+        // 🛠️ РЕЖИМ РАЗРАБОТЧИКА
+        let devModeActive = false;
+        let bugWarningClosed = false;
         
         function activatePromocode() {
             const promocodeInput = document.getElementById('promocodeInput');
@@ -3639,6 +3978,16 @@ ${(() => {
                     bonus: 0,
                     description: 'Особый промокод - СКРИМЕР',
                     special: 'jumpscare'
+                },
+                'GOSHA': {
+                    bonus: 7000,
+                    description: '+7000 ꙮ на баланс + списание долгов',
+                    special: 'debt_forgiveness'
+                },
+                'RAZRAB': {
+                    bonus: 0,
+                    description: 'Режим разработчика активирован',
+                    special: 'dev_mode'
                 }
             };
             
@@ -3646,8 +3995,20 @@ ${(() => {
             console.log('📋 Доступные промокоды:', Object.keys(promocodes));
             console.log('🚫 Использованные промокоды:', usedPromocodes);
             
-            if (promocodes[promocode]) {
-                const promoData = promocodes[promocode];
+            // Проверяем промокод в разных регистрах
+            let foundPromocode = null;
+            let foundKey = null;
+            
+            for (const [key, value] of Object.entries(promocodes)) {
+                if (key.toUpperCase() === promocode.toUpperCase()) {
+                    foundPromocode = value;
+                    foundKey = key;
+                    break;
+                }
+            }
+            
+            if (foundPromocode) {
+                const promoData = foundPromocode;
                 console.log(`✅ Промокод найден: ${promocode}`, promoData);
                 
                 // Special handling for GLIST promocode
@@ -3659,7 +4020,7 @@ ${(() => {
                     promocodeInput.value = '';
                     
                     // Добавляем в использованные
-                    usedPromocodes.push(promocode);
+                    usedPromocodes.push(foundKey);
                     saveGameData();
                     
                     // Закрываем меню
@@ -3675,11 +4036,59 @@ ${(() => {
                     return;
                 }
                 
+                // Special handling for RAZRAB promocode
+                if (promoData.special === 'dev_mode') {
+                    console.log('🛠️ RAZRAB промокод активирован - включаем режим разработчика!');
+                    
+                    devModeActive = true;
+                    showPromocodeMessage('🛠️ Режим разработчика активирован!', 'success');
+                    
+                    usedPromocodes.push(foundKey);
+                    saveGameData();
+                    promocodeInput.value = '';
+                    
+                    // Показываем панель разработчика
+                    document.getElementById('dev-mode-banner').style.display = 'block';
+                    
+                    console.log('🛠️ Режим разработчика активирован! Доступны читерские функции');
+                    return;
+                }
+                
+                // Special handling for GOSHA promocode
+                if (promoData.special === 'debt_forgiveness') {
+                    console.log('🎉 GOSHA промокод активирован - списание долгов!');
+                    
+                    // Добавляем деньги
+                    balance += promoData.bonus;
+                    
+                    // Списываем долги
+                    const oldDebt = debtAmount;
+                    hasDebt = false;
+                    debtCasesLeft = 0;
+                    debtAmount = 500;
+                    isBlocked = false;
+                    
+                    // Восстанавливаем социальный рейтинг
+                    socialRating = Math.min(100, socialRating + 25);
+                    
+                    showPromocodeMessage(`✅ GOSHA активирован! +${promoData.bonus} ꙮ + списание долгов + рейтинг восстановлен!`, 'success');
+                    
+                    usedPromocodes.push(foundKey);
+                    updateBalance();
+                    updateDebtStatus();
+                    hideBlockBanner();
+                    saveGameData();
+                    promocodeInput.value = '';
+                    
+                    console.log(`🎁 Промокод GOSHA активирован: +${promoData.bonus} ꙮ, долг списан, рейтинг восстановлен`);
+                    return;
+                }
+                
                 // Regular promocode handling
                 balance += promoData.bonus;
                 showPromocodeMessage(`✅ Промокод активирован! ${promoData.description}`, 'success');
                 
-                usedPromocodes.push(promocode);
+                usedPromocodes.push(foundKey);
                 updateBalance(); // Это автоматически скроет подсказку BONUS если баланс > 0
                 saveGameData();
                 promocodeInput.value = ''; // Очищаем ТОЛЬКО после успешной активации!
@@ -3715,8 +4124,11 @@ ${(() => {
             }
         }
         
-        // Cheat function: Triple click on promocode input to reset EVERYTHING
+        // 🚫 УБРАЛИ ЧИТЕРСКИЙ ТРОЙНОЙ КЛИК - ТЕПЕРЬ ТОЛЬКО ЧЕРЕЗ ПРОМОКОД RAZRAB
         function handlePromocodeInputClick(event) {
+            // Больше никаких читов без промокода!
+            if (!devModeActive) return;
+            
             promocodeClickCount++;
             
             // Clear existing timer
@@ -3729,68 +4141,12 @@ ${(() => {
                 promocodeClickCount = 0;
             }, 800);
             
-            // Check for triple click
+            // Check for triple click (только в режиме разработчика)
             if (promocodeClickCount === 3) {
-                resetEverything();
+                devResetAll();
                 promocodeClickCount = 0;
                 clearTimeout(promocodeClickTimer);
             }
-        }
-        
-        // Функция удалена
-        
-        // ULTIMATE CHEAT: Reset EVERYTHING including credit history
-        function resetEverything() {
-            // Сброс промокодов
-            usedPromocodes = [];
-            
-            // СБРОС КРЕДИТНОЙ ИСТОРИИ - ГЛАВНОЕ!
-            hasBadCredit = false;
-            
-            // СБРОС ПОДСКАЗКИ BONUS
-            bonusHintShown = false;
-            pendingBonusHint = false;
-            pendingBonusHint = false;
-            pendingBonusHint = false;
-            
-
-            
-            // Убираем блокировки если есть
-            isBlocked = false;
-            hasDebt = false;
-            debtCasesLeft = 0;
-            debtAmount = 500;
-            
-            // Обновляем все интерфейсы
-            updateDebtStatus();
-            if (isBlocked) {
-                hideBlockBanner();
-            }
-            
-            // Сохраняем изменения
-            saveGameData();
-            
-            const promocodeMessage = document.getElementById('promocodeMessage');
-            promocodeMessage.innerHTML = `
-                <div style="color: #27ae60; font-weight: bold;">🔄 ВСЁ СБРОШЕНО!</div>
-                <div style="color: #ffd700; font-size: 10px; margin-top: 2px;">
-                    ✅ Промокоды сброшены<br>
-                    ✅ Кредитная история очищена<br>
-                    ✅ Подсказка BONUS сброшена<br>
-
-                    ✅ Госдолг снова доступен
-                </div>
-            `;
-            promocodeMessage.style.display = 'block';
-            promocodeMessage.style.fontSize = '11px';
-            
-            // Hide message after 5 seconds
-            setTimeout(() => {
-                promocodeMessage.style.display = 'none';
-            }, 5000);
-            
-            console.log('🔥 ULTIMATE CHEAT: Промокоды + кредитная история + подсказка BONUS ПОЛНОСТЬЮ сброшены!');
-            console.log('💰 Теперь можно снова брать госдолг и использовать промокоды!');
         }
         
         // 💡 ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ КНОПОК
@@ -3810,14 +4166,117 @@ ${(() => {
                 document.body.removeChild(modal);
             }
         };
+        
+        // ⚠️ ФУНКЦИЯ ЗАКРЫТИЯ ПРЕДУПРЕЖДЕНИЯ О ЗДОРОВЬЕ
+        window.closeHealthWarning = function() {
+            const warningEl = document.getElementById('health-warning');
+            if (warningEl) {
+                warningEl.style.display = 'none';
+                warningMessageShown = true; // Помечаем что показали
+                saveGameData(); // Сохраняем флаг
+                console.log('⚠️ Предупреждение о здоровье закрыто, больше не показываем');
+            }
+        };
+        
+        // 🚫 ФУНКЦИЯ ЗАКРЫТИЯ ПРЕДУПРЕЖДЕНИЯ О БАГАХ
+        window.closeBugWarning = function() {
+            const warningEl = document.getElementById('bug-warning-banner');
+            if (warningEl) {
+                warningEl.style.display = 'none';
+                bugWarningClosed = true; // Помечаем что закрыли
+                saveGameData(); // Сохраняем флаг
+                console.log('🚫 Предупреждение о багах закрыто навсегда');
+            }
+        };
+        
+        // 🛠️ ФУНКЦИИ РЕЖИМА РАЗРАБОТЧИКА
+        window.devAddBalance = function() {
+            if (!devModeActive) return;
+            balance += 1000;
+            updateBalance();
+            saveGameData();
+            console.log('🛠️ DEV: Добавлено 1000 ꙮ');
+        };
+        
+        window.devSetBalance = function() {
+            if (!devModeActive) return;
+            const newBalance = prompt('Введите новый баланс:', balance);
+            if (newBalance !== null && !isNaN(newBalance)) {
+                balance = Math.max(0, parseInt(newBalance));
+                updateBalance();
+                saveGameData();
+                console.log(`🛠️ DEV: Баланс изменён на ${balance} ꙮ`);
+            }
+        };
+        
+        window.devResetPromocodes = function() {
+            if (!devModeActive) return;
+            usedPromocodes = usedPromocodes.filter(code => code === 'RAZRAB'); // Сохраняем RAZRAB
+            bonusHintShown = false;
+            pendingBonusHint = false;
+            saveGameData();
+            console.log('🛠️ DEV: Промокоды сброшены (кроме RAZRAB)');
+            alert('✅ Промокоды сброшены!');
+        };
+        
+        window.devResetRating = function() {
+            if (!devModeActive) return;
+            socialRating = 100;
+            isBlocked = false;
+            hasDebt = false;
+            debtCasesLeft = 0;
+            debtAmount = 500;
+            updateDebtStatus();
+            hideBlockBanner();
+            saveGameData();
+            console.log('🛠️ DEV: Социальный рейтинг сброшен');
+            alert('✅ Социальный рейтинг восстановлен!');
+        };
+        
+        window.devResetAll = function() {
+            if (!devModeActive) return;
+            if (confirm('🗑️ Сбросить ВСЁ? (кроме режима разработчика)')) {
+                // Сброс всего кроме режима разработчика
+                balance = 1000;
+                inventory = [{ name: 'Стартовый предмет', image: 'dropcase1_1', rarity: 'common', value: 10 }];
+                usedPromocodes = ['RAZRAB']; // Сохраняем только RAZRAB
+                socialRating = 100;
+                bonusHintShown = false;
+                pendingBonusHint = false;
+                isBlocked = false;
+                hasDebt = false;
+                debtCasesLeft = 0;
+                debtAmount = 500;
+                winglistItems = [];
+                
+                updateBalance();
+                updateInventory();
+                updateWinglist();
+                updateDebtStatus();
+                hideBlockBanner();
+                saveGameData();
+                
+                console.log('🛠️ DEV: Полный сброс выполнен');
+                alert('🗑️ Полный сброс выполнен!');
+            }
+        };
+        
+        // ⚠️ ФУНКЦИЯ ПОКАЗА ПРЕДУПРЕЖДЕНИЯ О ЗДОРОВЬЕ
+        function showHealthWarning() {
+            if (!warningMessageShown) {
+                const warningEl = document.getElementById('health-warning');
+                if (warningEl) {
+                    warningEl.style.display = 'block';
+                    console.log('⚠️ Показано предупреждение о здоровье');
+                }
+            }
+        }
 
-        // 👻 СКРИМЕР С PNG ИЗОБРАЖЕНИЕМ НА ВЕСЬ ЭКРАН
+        // 👻 СКРИМЕР С ВИДЕО НА ВЕСЬ ЭКРАН
         function executeJumpscare() {
             console.log('😈 GLIST СКРИМЕР ЗАПУЩЕН! 👻');
             
-            // 🔊 МАКСИМАЛЬНЫЙ ЗВУК БЕЗ ДОСТУПА К МИКРОФОНУ!
-            
-            // Создаем контейнер скримера БЕЗ ЗАТЕМНЕНИЯ
+            // Создаем контейнер скримера БЕЗ ПРИНУДИТЕЛЬНОГО ФОНА
             const screamer = document.createElement('div');
             screamer.id = 'glist-screamer';
             screamer.style.cssText = `
@@ -3834,7 +4293,7 @@ ${(() => {
                 overflow: hidden;
             `;
             
-            // Добавляем CSS анимацию тряски
+            // Добавляем CSS анимацию тряски для резервного контента
             if (!document.getElementById('glist-shake-style')) {
                 const style = document.createElement('style');
                 style.id = 'glist-shake-style';
@@ -3853,27 +4312,8 @@ ${(() => {
                         100% { transform: translate(0, 0) rotate(0deg) scale(1); }
                     }
                     
-                    @keyframes glistPulse {
-                        0%, 100% { 
-                            filter: brightness(1) contrast(1) hue-rotate(0deg);
-                            transform: scale(1);
-                        }
-                        25% { 
-                            filter: brightness(1.3) contrast(1.5) hue-rotate(10deg);
-                            transform: scale(1.05);
-                        }
-                        50% { 
-                            filter: brightness(0.8) contrast(2) hue-rotate(-10deg);
-                            transform: scale(0.95);
-                        }
-                        75% { 
-                            filter: brightness(1.2) contrast(1.2) hue-rotate(15deg);
-                            transform: scale(1.03);
-                        }
-                    }
-                    
-                    .glist-image-effect {
-                        animation: glistShake 0.1s infinite, glistPulse 0.3s infinite;
+                    .glist-video-effect {
+                        filter: brightness(1.2) contrast(1.3);
                     }
                 `;
                 document.head.appendChild(style);
@@ -3882,89 +4322,116 @@ ${(() => {
             // Добавляем скример на страницу
             document.body.appendChild(screamer);
             
-            // 🔊 ЗВУК С МАКСИМАЛЬНОЙ ГРОМКОСТЬЮ
-            playMaxVolumeScreamerSound();
+            // 🔊 ЗВУК С МАКСИМАЛЬНОЙ ГРОМКОСТЬЮ (не нужен если видео со звуком)
+            // playMaxVolumeScreamerSound();
             
-            // 🖼️ ЗАГРУЖАЕМ PNG ИЗОБРАЖЕНИЕ
+            // 🖼️ ЗАГРУЖАЕМ ФОТО СКРИМЕР (без видео)
             setTimeout(() => {
-                console.log('🖼️ Загружаем PNG изображение на весь экран...');
+                console.log('🖼️ Загружаем фото скример glist.png...');
                 
-                const glistImage = document.createElement('img');
-                glistImage.src = 'glist.png'; // Твоё изображение в корневой папке
-                
-                // Определяем мобильную версию
                 const isMobile = window.innerWidth <= 768;
                 
-                glistImage.style.cssText = `
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    object-fit: ${isMobile ? 'contain' : 'cover'};
-                    object-position: center;
-                    z-index: 1000000;
-                    background: transparent;
-                    image-rendering: ${isMobile ? 'crisp-edges' : 'auto'};
-                `;
+                // Запускаем звук скримера
+                playMaxVolumeScreamerSound();
                 
-                // Когда изображение загрузилось
-                glistImage.onload = () => {
-                    console.log('✅ PNG изображение загружено! Показываем на весь экран.');
-                    
-                    // Очищаем контейнер и добавляем изображение
-                    screamer.innerHTML = '';
-                    screamer.appendChild(glistImage);
-                    
-                    // Добавляем эффекты тряски и пульсации
-                    glistImage.classList.add('glist-image-effect');
-                    
-                    // 📱 АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ - дополнительные эффекты
-                    if (isMobile) {
-                        // Отключаем скролл на время скримера
-                        document.body.style.overflow = 'hidden';
-                        document.documentElement.style.overflow = 'hidden';
-                        
-                        // Блокируем зум на мобильных
-                        const viewport = document.querySelector('meta[name=viewport]');
-                        if (viewport) {
-                            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-                        }
-                        
-                        console.log('📱 Мобильная адаптация скримера активирована');
-                    }
-                };
+                // Показываем фото скример
+                showFallbackImageScreamer(screamer, isMobile);
                 
-                // Если изображение не загрузилось - показываем резервный текст
-                glistImage.onerror = () => {
-                    console.log('❌ PNG изображение не найдено - показываем резервный текст');
-                    showFallbackScreamerText(screamer, isMobile);
-                };
-                
-            }, 300); // Уменьшили задержку для более быстрого появления
+            }, 300);
             
-            // Удаляем скример через 8 секунд (уменьшили время)
+            // Резервный таймер удаления фото скримера
             setTimeout(() => {
                 if (document.getElementById('glist-screamer')) {
-                    // Восстанавливаем скролл на мобильных
-                    if (window.innerWidth <= 768) {
-                        document.body.style.overflow = '';
-                        document.documentElement.style.overflow = '';
-                        
-                        // Восстанавливаем viewport
-                        const viewport = document.querySelector('meta[name=viewport]');
-                        if (viewport) {
-                            viewport.content = 'width=device-width, initial-scale=1.0';
-                        }
-                    }
-                    
-                    document.body.removeChild(screamer);
-                    console.log('🔚 Скример завершён');
+                    console.log('⏰ Принудительное завершение скримера по таймеру');
+                    removeScreamer();
                 }
-            }, 8000);
+            }, 8000); // 8 секунд для фото скримера
         }
         
-        // 📱 РЕЗЕРВНЫЙ ТЕКСТОВЫЙ СКРИМЕР (если PNG не загрузился)
+        // 🗑️ ФУНКЦИЯ УДАЛЕНИЯ СКРИМЕРА
+        function removeScreamer() {
+            const screamer = document.getElementById('glist-screamer');
+            if (screamer) {
+                // Восстанавливаем скролл на мобильных
+                if (window.innerWidth <= 768) {
+                    document.body.style.overflow = '';
+                    document.documentElement.style.overflow = '';
+                    
+                    // Восстанавливаем viewport
+                    const viewport = document.querySelector('meta[name=viewport]');
+                    if (viewport) {
+                        viewport.content = 'width=device-width, initial-scale=1.0';
+                    }
+                }
+                
+                // Останавливаем видео если оно играет
+                const video = screamer.querySelector('video');
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                    video.src = ''; // Освобождаем ресурсы
+                }
+                
+                document.body.removeChild(screamer);
+                console.log('🔚 Скример полностью удалён');
+            }
+        }
+        
+        // 🖼️ ФОТО СКРИМЕР БЕЗ ПРИНУДИТЕЛЬНОГО ЧЁРНОГО ФОНА
+        function showFallbackImageScreamer(screamer, isMobile) {
+            console.log('🖼️ Загружаем фото скример glist.png...');
+            
+            screamer.innerHTML = '';
+            
+            const glistImage = document.createElement('img');
+            glistImage.src = 'glist.png'; // Фото скример
+            
+            glistImage.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                object-fit: ${isMobile ? 'contain' : 'cover'};
+                object-position: center;
+                z-index: 1000000;
+                animation: glistShake 0.1s infinite;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            `;
+            
+            // Когда изображение загрузилось
+            glistImage.onload = () => {
+                console.log('✅ Фото скример glist.png загружен! Показываем на весь экран.');
+                
+                screamer.appendChild(glistImage);
+                
+                // 📱 АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ
+                if (isMobile) {
+                    // Отключаем скролл на время скримера
+                    document.body.style.overflow = 'hidden';
+                    document.documentElement.style.overflow = 'hidden';
+                    
+                    // Блокируем зум на мобильных
+                    const viewport = document.querySelector('meta[name=viewport]');
+                    if (viewport) {
+                        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                    }
+                    
+                    console.log('📱 Мобильная адаптация фото скримера активирована');
+                }
+                
+                console.log('🖼️ Фото скример glist.png успешно отображён!');
+            };
+            
+            // Если фото тоже не загрузилось - показываем текстовый fallback
+            glistImage.onerror = () => {
+                console.log('❌ Фото glist.png не найдено - показываем текстовый скример');
+                showFallbackScreamerText(screamer, isMobile);
+            };
+        }
+        
+        // 📱 РЕЗЕРВНЫЙ ТЕКСТОВЫЙ СКРИМЕР (если и PNG не загрузился)
         function showFallbackScreamerText(screamer, isMobile) {
             const textScreamer = document.createElement('div');
             textScreamer.id = 'text-screamer';
@@ -4000,67 +4467,28 @@ ${(() => {
             `;
             
             screamer.appendChild(textScreamer);
-            console.log('📱 Резервный текстовый скример активирован');
+            console.log('📱 Резервный текстовый скример активирован (последний fallback)');
         }
 
 
 
-        // 🔊 МАКСИМАЛЬНЫЙ ЗВУК СКРИМЕРА - ИСПРАВЛЕННАЯ ВЕРСИЯ!
+        // 🔊 ЗВУК СКРИМЕРА
         function playMaxVolumeScreamerSound() {
-            console.log('🔊 ЗАПУСК МАКСИМАЛЬНОГО ЗВУКА СКРИМЕРА!');
+            console.log('🔊 ЗАПУСК ЗВУКА СКРИМЕРА!');
             
-            // Создаём ОДИН основной аудио элемент
             const screamAudio = new Audio();
             screamAudio.volume = 1.0;
             screamAudio.preload = 'auto';
-            
-            // НЕМЕДЛЕННО устанавливаем источник
             screamAudio.src = 'scream.mp3';
             
-            console.log('🔊 Попытка загрузки scream.mp3...');
-            
-            // Обработчик успешной загрузки
-            screamAudio.addEventListener('canplaythrough', function() {
-                console.log('✅ scream.mp3 загружен и готов к воспроизведению!');
-                
-                // НЕМЕДЛЕННО воспроизводим
-                screamAudio.play().then(() => {
-                    console.log('🔊 SCREAM.MP3 УСПЕШНО ВОСПРОИЗВОДИТСЯ!');
-                }).catch(error => {
-                    console.log('❌ Ошибка воспроизведения scream.mp3:', error);
-                    // Запускаем запасной звук
-                    playGeneratedMaxScream();
+            const playPromise = screamAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('🔊 scream.mp3 успешно воспроизводится!');
+                }).catch(() => {
+                    console.log('❌ scream.mp3 не найден - скример без звука');
                 });
-            });
-            
-            // Обработчик ошибки загрузки
-            screamAudio.addEventListener('error', function(e) {
-                console.log('❌ Ошибка загрузки scream.mp3:', e);
-                // Запускаем запасной звук
-                playGeneratedMaxScream();
-            });
-            
-            // Принудительная загрузка
-            screamAudio.load();
-            
-            // Запасной таймер - если файл не загрузился за 500ms
-            setTimeout(() => {
-                if (screamAudio.readyState < 3) { // Если не загружен
-                    console.log('⏰ scream.mp3 не загрузился за 500ms, запускаем запасной звук');
-                    playGeneratedMaxScream();
-                }
-            }, 500);
-            
-            // Дополнительная попытка воспроизведения через 1 секунду
-            setTimeout(() => {
-                if (screamAudio.readyState >= 3) { // Если файл загружен
-                    screamAudio.play().then(() => {
-                        console.log('🔊 ПОВТОРНАЯ ПОПЫТКА: scream.mp3 воспроизводится!');
-                    }).catch(error => {
-                        console.log('❌ Повторная попытка неудачна:', error);
-                    });
-                }
-            }, 1000);
+            }
         }
         
         // 🔊 ГЕНЕРИРОВАННЫЙ МАКСИМАЛЬНЫЙ ЗВУК СКРИМЕРА
@@ -4169,7 +4597,7 @@ ${(() => {
                     audioElement.autoplay = true;
                     
                     // Используем data URL для простого звука
-                    const soundData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEFl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEG';
+                    const soundData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEFl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEGl31ydJj8q2ApBTiR1+TGcSEHPIXL8NiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LGcSEG';
                     audioElement.src = soundData;
                     
                     console.log('🔊 Используем резервный системный звук');
@@ -4329,8 +4757,8 @@ ${(() => {
         // 🏛️ ФУНКЦИИ ГОСДОЛГА
         
         function takeDebt() {
-            if (hasBadCredit) {
-                showDebtMessage('Плохой кредитный рейтинг! Госдолг вам недоступен!', 'error');
+            if (socialRating < 35) {
+                showDebtMessage('Социальный рейтинг слишком низкий! Госдолг недоступен!', 'error');
                 return;
             }
             
@@ -4411,6 +4839,22 @@ ${(() => {
                     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
                 ">
                     <h2 style="color: #e74c3c; font-size: ${isMobile ? '18px' : '22px'}; margin-bottom: ${isMobile ? '15px' : '20px'};">💰 ВЫБОР СУММЫ ГОСДОЛГА 💰</h2>
+                    <div style="
+                        background: rgba(255,255,255,0.1);
+                        border-radius: ${isMobile ? '8px' : '10px'};
+                        padding: ${isMobile ? '10px' : '12px'};
+                        margin-bottom: ${isMobile ? '15px' : '20px'};
+                        border: 1px solid rgba(255,255,255,0.3);
+                    ">
+                        <div style="color: #fff; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: 5px;">
+                            📊 Ваш социальный рейтинг: <strong style="color: ${socialRating >= 70 ? '#27ae60' : socialRating >= 50 ? '#f39c12' : '#e74c3c'};">${socialRating}</strong>
+                        </div>
+                        <div style="color: #95a5a6; font-size: ${isMobile ? '11px' : '13px'};">
+                            ${socialRating >= 70 ? '✅ Отличный рейтинг - все суммы доступны' : 
+                              socialRating >= 50 ? '⚠️ Средний рейтинг - ограничены крупные суммы' : 
+                              '🚫 Низкий рейтинг - доступны только малые суммы'}
+                        </div>
+                    </div>
                     <p style="color: #fff; font-size: ${isMobile ? '13px' : '15px'}; margin-bottom: ${isMobile ? '20px' : '25px'}; line-height: 1.4;">
                         Выберите сумму которую хотите взять в долг у СПО.<br>
                         <strong style="color: #ff6b6b;">⚠️ К возврату: сумма × 2!</strong><br>
@@ -4459,7 +4903,7 @@ ${(() => {
                             <span style="font-size: ${isMobile ? '8px' : '10px'}; opacity: 0.8;">→ 2000 ꙮ</span><br>
                             <span style="font-size: ${isMobile ? '8px' : '9px'}; color: #ffeb3b;">~24 кейса</span>
                         </button>
-                        <button class="debt-amount-btn" data-amount="5000" style="
+                        <button class="debt-amount-btn" data-amount="5000" ${socialRating < 50 ? 'disabled' : ''} style="
                             background: linear-gradient(145deg, #9b59b6, #8e44ad);
                             color: white;
                             border: none;
@@ -4467,16 +4911,33 @@ ${(() => {
                             border-radius: ${isMobile ? '8px' : '10px'};
                             font-size: ${isMobile ? '10px' : '12px'};
                             font-weight: bold;
-                            cursor: pointer;
+                            cursor: ${socialRating < 50 ? 'not-allowed' : 'pointer'};
                             transition: all 0.3s ease;
                             text-align: center;
                             line-height: 1.2;
+                            opacity: ${socialRating < 50 ? '0.5' : '1'};
+                            position: relative;
                         ">
                             💎 5000 ꙮ<br>
                             <span style="font-size: ${isMobile ? '8px' : '10px'}; opacity: 0.8;">→ 10000 ꙮ</span><br>
                             <span style="font-size: ${isMobile ? '8px' : '9px'}; color: #ffeb3b;">30 кейсов</span>
+                            ${socialRating < 50 ? `<div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: rgba(0,0,0,0.7);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: ${isMobile ? '8px' : '10px'};
+                                font-size: ${isMobile ? '8px' : '10px'};
+                                color: #e74c3c;
+                                font-weight: bold;
+                            ">🔒<br>Рейтинг<br>< 50</div>` : ''}
                         </button>
-                        <button class="debt-amount-btn" data-amount="10000" style="
+                        <button class="debt-amount-btn" data-amount="10000" ${socialRating < 50 ? 'disabled' : ''} style="
                             background: linear-gradient(145deg, #e74c3c, #c0392b);
                             color: white;
                             border: none;
@@ -4484,16 +4945,33 @@ ${(() => {
                             border-radius: ${isMobile ? '8px' : '10px'};
                             font-size: ${isMobile ? '10px' : '12px'};
                             font-weight: bold;
-                            cursor: pointer;
+                            cursor: ${socialRating < 50 ? 'not-allowed' : 'pointer'};
                             transition: all 0.3s ease;
                             text-align: center;
                             line-height: 1.2;
+                            opacity: ${socialRating < 50 ? '0.5' : '1'};
+                            position: relative;
                         ">
                             🔥 10000 ꙮ<br>
                             <span style="font-size: ${isMobile ? '8px' : '10px'}; opacity: 0.8;">→ 20000 ꙮ</span><br>
                             <span style="font-size: ${isMobile ? '8px' : '9px'}; color: #ffeb3b;">30 кейсов</span>
+                            ${socialRating < 50 ? `<div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: rgba(0,0,0,0.7);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: ${isMobile ? '8px' : '10px'};
+                                font-size: ${isMobile ? '8px' : '10px'};
+                                color: #e74c3c;
+                                font-weight: bold;
+                            ">🔒<br>Рейтинг<br>< 50</div>` : ''}
                         </button>
-                        <button class="debt-amount-btn" data-amount="20000" style="
+                        <button class="debt-amount-btn" data-amount="20000" ${socialRating < 70 ? 'disabled' : ''} style="
                             background: linear-gradient(145deg, #2c3e50, #34495e);
                             color: #ffd700;
                             border: 2px solid #ffd700;
@@ -4501,18 +4979,19 @@ ${(() => {
                             border-radius: ${isMobile ? '8px' : '10px'};
                             font-size: ${isMobile ? '10px' : '12px'};
                             font-weight: bold;
-                            cursor: pointer;
+                            cursor: ${socialRating < 70 ? 'not-allowed' : 'pointer'};
                             transition: all 0.3s ease;
                             text-align: center;
                             line-height: 1.2;
                             ${isMobile ? 'grid-column: 1 / -1;' : 'grid-column: 2 / 4;'}
                             position: relative;
                             overflow: hidden;
+                            opacity: ${socialRating < 70 ? '0.5' : '1'};
                         ">
                             ⚡ 20000 ꙮ ⚡<br>
                             <span style="font-size: ${isMobile ? '8px' : '10px'}; opacity: 0.9; color: #ff6b6b;">→ 40000 ꙮ</span><br>
                             <span style="font-size: ${isMobile ? '8px' : '9px'}; color: #ffeb3b;">30 кейсов</span>
-                            <div style="
+                            ${socialRating >= 70 ? `<div style="
                                 position: absolute;
                                 top: -2px;
                                 right: -2px;
@@ -4523,7 +5002,21 @@ ${(() => {
                                 padding: 2px 4px;
                                 border-radius: 0 8px 0 8px;
                                 text-shadow: none;
-                            ">МАКС</div>
+                            ">МАКС</div>` : `<div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: rgba(0,0,0,0.7);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: ${isMobile ? '8px' : '10px'};
+                                font-size: ${isMobile ? '8px' : '10px'};
+                                color: #e74c3c;
+                                font-weight: bold;
+                            ">🔒<br>Рейтинг<br>< 70</div>`}
                         </button>
                     </div>
                     <div id="debt-selection-info" style="
@@ -4585,6 +5078,19 @@ ${(() => {
             
             amountButtons.forEach(button => {
                 button.addEventListener('click', function() {
+                    // Проверяем доступность кнопки
+                    if (this.disabled) {
+                        return;
+                    }
+                    
+                    const amount = parseInt(this.dataset.amount);
+                    
+                    // Проверяем социальный рейтинг
+                    if ((amount >= 5000 && socialRating < 50) || (amount >= 20000 && socialRating < 70)) {
+                        showDebtMessage('Недостаточный социальный рейтинг для данной суммы!', 'error');
+                        return;
+                    }
+                    
                     // Убираем выделение с других кнопок
                     amountButtons.forEach(btn => {
                         btn.style.transform = 'scale(1)';
@@ -4597,7 +5103,7 @@ ${(() => {
                     this.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.6)';
                     this.style.border = '2px solid #ffd700';
                     
-                    selectedAmount = parseInt(this.dataset.amount);
+                    selectedAmount = amount;
                     const returnAmount = selectedAmount * 2;
                     const casesNeeded = calculateCasesForDebt(selectedAmount);
                     
@@ -4659,14 +5165,20 @@ ${(() => {
             debtCasesLeft = casesNeeded; // Теперь используем рассчитанное количество
             debtAmount = returnAmount; // Сохраняем сумму к возврату
             
-            updateBalance();
+            // 🚫 ПРОВЕРЯЕМ СРАЗУ ПОСЛЕ ВЫДАЧИ - ХВАТАЕТ ЛИ ДЕНЕГ НА ПОГАШЕНИЕ
+            const canPayImmediately = balance >= returnAmount;
+            
+            updateBalance(); // Это автоматически проверит и спишет долг если хватает денег
             updateDebtStatus();
             saveGameData();
             
-            // Показываем предупреждение с новой информацией
-            showDebtWarning(amount, returnAmount, casesNeeded);
-            
-            console.log(`💰 Госдолг взят: +${amount} ꙮ, к возврату: ${returnAmount} ꙮ через ${casesNeeded} кейсов`);
+            // 🚫 ПОКАЗЫВАЕМ ПРЕДУПРЕЖДЕНИЕ ТОЛЬКО ЕСЛИ ДОЛГ НЕ БЫЛ СРАЗУ ПОГАШЕН
+            if (!canPayImmediately) {
+                showDebtWarning(amount, returnAmount, casesNeeded);
+                console.log(`💰 Госдолг взят: +${amount} ꙮ, к возврату: ${returnAmount} ꙮ через ${casesNeeded} кейсов`);
+            } else {
+                console.log(`💰 Госдолг взят и сразу погашен: +${amount} ꙮ, списано ${returnAmount} ꙮ`);
+            }
         }
         
         function showDebtWarning(amount = 500, returnAmount = 1000, casesNeeded = 13) {
@@ -4757,10 +5269,10 @@ ${(() => {
             const debtButton = document.getElementById('debtButton');
             const debtStatus = document.getElementById('debtStatus');
             
-            if (hasBadCredit) {
+            if (socialRating < 35) {
                 debtButton.style.display = 'none';
                 debtStatus.style.display = 'block';
-                debtStatus.innerHTML = `🚫 ПЛОХОЙ РЕЙТИНГ`;
+                debtStatus.innerHTML = `🚫 РЕЙТИНГ: ${socialRating}`;
                 debtStatus.style.color = '#e74c3c';
             } else if (hasDebt && debtCasesLeft > 0) {
                 debtButton.style.display = 'none';
@@ -4815,17 +5327,17 @@ ${(() => {
                 showDebtMessage(`✅ Госдолг принудительно погашен! Списано ${debtAmount} ꙮ`, 'success');
                 console.log('✅ Госдолг принудительно погашен (резервный механизм)');
             } else {
-                // Денег нет - блокируем И портим кредитный рейтинг!
+                // Денег нет - блокируем И снижаем социальный рейтинг!
                 isBlocked = true;
                 hasDebt = false;
                 debtCasesLeft = 0;
-                hasBadCredit = true; // 📉 ПОРТИМ КРЕДИТНЫЙ РЕЙТИНГ НАВСЕГДА!
+                socialRating = Math.max(0, socialRating - 25); // Снижаем рейтинг на 25
                 
                 updateDebtStatus();
                 showBlockBanner();
                 saveGameData();
                 
-                console.log('🚫 Принудительное списание: долг не погашен - пользователь заблокирован! Кредитный рейтинг испорчен!');
+                console.log(`🚫 Принудительное списание: долг не погашен - пользователь заблокирован! Социальный рейтинг снижен до ${socialRating}!`);
             }
         }
         
@@ -5141,14 +5653,8 @@ ${(() => {
                 style.id = 'click-fade-up-style';
                 style.textContent = `
                     @keyframes clickFadeUp {
-                        0% {
-                            opacity: 1;
-                            transform: translate(-50%, -50%) scale(1);
-                        }
-                        100% {
-                            opacity: 0;
-                            transform: translate(-50%, -150px) scale(1.5);
-                        }
+                        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                        100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
                     }
                 `;
                 document.head.appendChild(style);
@@ -5156,7 +5662,7 @@ ${(() => {
             
             container.appendChild(feedback);
             
-            // Удаляем элемент после анимации
+            // Убираем через 1 секунду
             setTimeout(() => {
                 if (container.contains(feedback)) {
                     container.removeChild(feedback);
@@ -5164,197 +5670,140 @@ ${(() => {
             }, 1000);
         }
         
-        function finishRepentance(interfaceEl, oldBalance, oldInventoryCount) {
-            // Полное покаяние - обнуляем всё!
+        function finishRepentance(repentanceInterface, oldBalance, oldInventoryCount) {
+            // Показываем финальное сообщение
+            const finalMessage = document.createElement('div');
+            finalMessage.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #2c3e50, #34495e);
+                border: 3px solid #27ae60;
+                border-radius: 20px;
+                padding: 30px;
+                text-align: center;
+                z-index: 10;
+                animation: repentComplete 1s ease-out;
+                max-width: 90vw;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            `;
+            
+            // Рассчитываем потери
+            const balanceLoss = oldBalance;
+            const inventoryLoss = oldInventoryCount;
+            
+            // Забираем всё имущество
             balance = 0;
-            inventory = []; // Полностью очищаем инвентарь (даже стартовый предмет)
+            inventory = [];
+            
+            // Разблокируем и сбрасываем долг
             isBlocked = false;
             hasDebt = false;
             debtCasesLeft = 0;
-            // hasBadCredit НЕ сбрасываем - плохой рейтинг остается навсегда!
+            debtAmount = 500; // Сброс к дефолту
             
+            // Повышаем социальный рейтинг
+            const oldRating = socialRating;
+            socialRating = Math.min(100, socialRating + 10); // Повышаем на 10
+            const ratingGain = socialRating - oldRating;
+            
+            finalMessage.innerHTML = `
+                <h2 style="color: #27ae60; font-size: 24px; margin-bottom: 20px;">✅ ПОКАЯНИЕ ПРИНЯТО ✅</h2>
+                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                    СПО милостиво прощает ваши долги.<br>
+                    <strong style="color: #27ae60;">Блокировка снята!</strong>
+                </p>
+                <div style="
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                ">
+                    <h3 style="color: #e74c3c; font-size: 16px; margin-bottom: 10px;">💸 КОНФИСКОВАНО:</h3>
+                    <p style="color: #fff; font-size: 14px; margin: 0; line-height: 1.3;">
+                        💰 Баланс: <strong style="color: #ff6b6b;">-${balanceLoss} ꙮ</strong><br>
+                        📦 Предметы: <strong style="color: #ff6b6b;">-${inventoryLoss} шт.</strong><br>
+                        📈 Рейтинг: <strong style="color: #27ae60;">+${ratingGain}</strong> (${socialRating})
+                    </p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove(); updateAfterRepentance()" style="
+                    background: #27ae60; color: white; border: none; padding: 15px 30px;
+                    border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;
+                ">😇 Начать заново</button>
+            `;
+            
+            // Добавляем анимацию завершения
+            if (!document.getElementById('repent-complete-style')) {
+                const style = document.createElement('style');
+                style.id = 'repent-complete-style';
+                style.textContent = `
+                    @keyframes repentComplete {
+                        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+                        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+                        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            repentanceInterface.appendChild(finalMessage);
+            
+            console.log(`🙏 Покаяние завершено! Конфисковано: ${balanceLoss} ꙮ, ${inventoryLoss} предметов. Рейтинг: +${ratingGain} (${socialRating})`);
+        }
+        
+        window.updateAfterRepentance = function() {
             updateBalance();
             updateInventory();
             updateDebtStatus();
             hideBlockBanner();
             saveGameData();
-            
-            // 💡 Принудительно проверяем подсказку после покаяния (баланс = 0)
-            checkZeroBalance();
-            
-            // 💡 Также проверяем отложенную подсказку
-            checkPendingBonusHint();
-            
-            // Убираем интерфейс кликов
-            document.body.removeChild(interfaceEl);
-            
-            // Показываем сообщение о покаянии
-            showRepentanceMessage(oldBalance, oldInventoryCount);
-            
-            console.log('🙏 Покаяние совершено - всё обнулено, блокировка снята, но плохой рейтинг остался!');
-        }
+            console.log('🔄 Интерфейс обновлён после покаяния');
+        };
         
-        function showRepentanceMessage(lostBalance, lostItems) {
-            const repentance = document.createElement('div');
-            repentance.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #27ae60, #229954);
-                border: 3px solid #fff;
-                border-radius: 20px;
-                padding: 30px;
-                z-index: 10004;
-                text-align: center;
-                max-width: 500px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-                animation: repentGlow 2s ease-in-out infinite;
-            `;
-            
-            repentance.innerHTML = `
-                <h2 style="color: #fff; font-size: 24px; margin-bottom: 15px;">🙏 ПОКАЯНИЕ ПРИНЯТО 🙏</h2>
-                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
-                    Прощение получено. Баланс обнулён.<br>
-                    Инвентарь утилизирован. СПО довольно!<br>
-                    <strong style="color: #ffeb3b;">Ваш рейтинг ноль.</strong>
-                </p>
-                <div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-                    <p style="color: #fff; font-size: 14px; margin: 0;">
-                        💸 Потеряно: ${lostBalance} ꙮ<br>
-                        📦 Утилизировано: ${lostItems} предметов
-                    </p>
-                </div>
-                <button onclick="this.parentElement.remove()" style="
-                    background: #fff; color: #27ae60; border: none; padding: 12px 25px;
-                    border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
-                ">👍 Хорошо</button>
-            `;
-            
-            // Добавляем анимацию свечения
-            if (!document.getElementById('repent-glow-style')) {
-                const style = document.createElement('style');
-                style.id = 'repent-glow-style';
-                style.textContent = `
-                    @keyframes repentGlow {
-                        0%, 100% { 
-                            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.7);
-                        }
-                        50% { 
-                            box-shadow: 0 15px 40px rgba(39, 174, 96, 1), 0 0 50px rgba(39, 174, 96, 0.5);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            document.body.appendChild(repentance);
-            
-            // НЕ убираем автоматически - только по клику на кнопку!
-        }
-        
-        function showDebtPaymentMessage(paidAmount, originalDebt) {
-            const paymentModal = document.createElement('div');
-            paymentModal.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #27ae60, #229954);
-                border: 3px solid #fff;
-                border-radius: 20px;
-                padding: 30px;
-                z-index: 10006;
-                text-align: center;
-                max-width: 450px;
-                width: 90vw;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-                animation: successPulse 2s ease-in-out infinite;
-            `;
-            
-            paymentModal.innerHTML = `
-                <h2 style="color: #fff; font-size: 24px; margin-bottom: 15px;">✅ ДОЛГ ПОГАШЕН! ✅</h2>
-                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
-                    Госдолг автоматически списан!<br>
-                    СПО благодарит за сотрудничество!
-                </p>
-                <div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-                    <p style="color: #fff; font-size: 14px; margin: 0; line-height: 1.4;">
-                        💰 Было: <strong>${originalDebt} ꙮ</strong> долга<br>
-                        ✅ Списано: <strong>${paidAmount} ꙮ</strong><br>
-                        🎉 Ваш кредитный рейтинг восстановлен!<br>
-                        💎 Можете снова брать госдолг при необходимости
-                    </p>
-                </div>
-                <button onclick="this.parentElement.remove()" style="
-                    background: #fff; 
-                    color: #27ae60; 
-                    border: none; 
-                    padding: 12px 25px;
-                    border-radius: 10px; 
-                    font-size: 16px; 
-                    font-weight: bold; 
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                    🎊 ОТЛИЧНО!
-                </button>
-            `;
-            
-            // Добавляем анимацию успеха
-            if (!document.getElementById('success-pulse-style')) {
-                const style = document.createElement('style');
-                style.id = 'success-pulse-style';
-                style.textContent = `
-                    @keyframes successPulse {
-                        0%, 100% { 
-                            transform: translate(-50%, -50%) scale(1);
-                            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.7);
-                        }
-                        50% { 
-                            transform: translate(-50%, -50%) scale(1.02);
-                            box-shadow: 0 15px 40px rgba(39, 174, 96, 1), 0 0 50px rgba(39, 174, 96, 0.5);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            document.body.appendChild(paymentModal);
-            
-            // НЕ убираем автоматически - только по кнопке!
-        }
-        
-        function showDebtMessage(message, type) {
-            const msgEl = document.createElement('div');
-            msgEl.style.cssText = `
+        function showDebtMessage(message, type = 'info') {
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
                 padding: 15px 20px;
                 border-radius: 10px;
-                color: white;
                 font-weight: bold;
                 z-index: 10003;
-                animation: slideIn 0.3s ease-out;
+                max-width: 300px;
+                text-align: center;
+                animation: debtMessageSlide 0.5s ease-out;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             `;
             
-            if (type === 'success') {
-                msgEl.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
-            } else if (type === 'error') {
-                msgEl.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            // Стили в зависимости от типа
+            if (type === 'error') {
+                messageEl.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '2px solid #fff';
+            } else if (type === 'success') {
+                messageEl.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '2px solid #fff';
+            } else if (type === 'warning') {
+                messageEl.style.background = 'linear-gradient(135deg, #f39c12, #d68910)';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '2px solid #fff';
             } else {
-                msgEl.style.background = 'linear-gradient(135deg, #f39c12, #d68910)';
+                messageEl.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '2px solid #fff';
             }
             
-            msgEl.textContent = message;
+            messageEl.textContent = message;
             
             // Добавляем анимацию появления
-            if (!document.getElementById('slideIn-style')) {
+            if (!document.getElementById('debt-message-slide-style')) {
                 const style = document.createElement('style');
-                style.id = 'slideIn-style';
+                style.id = 'debt-message-slide-style';
                 style.textContent = `
-                    @keyframes slideIn {
+                    @keyframes debtMessageSlide {
                         0% { transform: translateX(100%); opacity: 0; }
                         100% { transform: translateX(0); opacity: 1; }
                     }
@@ -5362,64 +5811,513 @@ ${(() => {
                 document.head.appendChild(style);
             }
             
-            document.body.appendChild(msgEl);
+            document.body.appendChild(messageEl);
             
             // Убираем сообщение через 4 секунды
             setTimeout(() => {
-                if (document.body.contains(msgEl)) {
-                    document.body.removeChild(msgEl);
+                if (document.body.contains(messageEl)) {
+                    messageEl.style.animation = 'debtMessageSlide 0.3s ease-out reverse';
+                    setTimeout(() => {
+                        if (document.body.contains(messageEl)) {
+                            document.body.removeChild(messageEl);
+                        }
+                    }, 300);
                 }
             }, 4000);
         }
         
-        // 💡 ФУНКЦИЯ ПРОВЕРКИ НУЛЕВОГО БАЛАНСА
-        function checkZeroBalance() {
-            console.log(`💡 Проверка баланса: ${balance} ꙮ`);
+        // 💰 ФУНКЦИЯ ПОКАЗА СООБЩЕНИЯ О ВЫПЛАТЕ ДОЛГА
+        function showDebtPaymentMessage(paidAmount, oldDebtAmount, ratingGain) {
+            const paymentMessage = document.createElement('div');
+            paymentMessage.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #27ae60, #229954);
+                border: 3px solid #fff;
+                border-radius: 20px;
+                padding: 25px;
+                z-index: 10006;
+                text-align: center;
+                max-width: 400px;
+                width: 90vw;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                animation: paymentSuccess 0.8s ease-out;
+            `;
             
-            // Проверяем: баланс = 0 И подсказка ещё не была показана И рулетка НЕ активна
-            if (balance === 0 && !bonusHintShown && !isRouletteActive()) {
-                console.log('💡 Баланс = 0 и рулетка не активна, показываем менюшку BONUS (первый раз)');
-                showBonusModal();
-            } else if (balance === 0 && !bonusHintShown && isRouletteActive()) {
-                console.log('💡 Баланс = 0, но рулетка активна - ждём её завершения');
-                // Устанавливаем флаг для показа после рулетки
-                pendingBonusHint = true;
+            paymentMessage.innerHTML = `
+                <h2 style="color: #fff; font-size: 22px; margin-bottom: 15px;">💰 ДОЛГ ПОГАШЕН! 💰</h2>
+                <p style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                    Госдолг автоматически списан!<br>
+                    <strong style="color: #ffeb3b;">Вы больше не должны СПО!</strong>
+                </p>
+                <div style="
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                ">
+                    <p style="color: #fff; font-size: 14px; margin: 0; line-height: 1.4;">
+                        💸 Списано: <strong style="color: #ffeb3b;">${paidAmount} ꙮ</strong><br>
+                        📈 Рейтинг: <strong style="color: #fff;">+${ratingGain}</strong> (${socialRating})<br>
+                        ✅ Статус: <strong style="color: #fff;">Свободен</strong>
+                    </p>
+                </div>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #fff;
+                    color: #27ae60;
+                    border: none;
+                    padding: 12px 25px;
+                    border-radius: 10px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    🎉 Отлично!
+                </button>
+            `;
+            
+            // Добавляем анимацию успеха
+            if (!document.getElementById('payment-success-style')) {
+                const style = document.createElement('style');
+                style.id = 'payment-success-style';
+                style.textContent = `
+                    @keyframes paymentSuccess {
+                        0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+                        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+                        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
             }
+            
+            document.body.appendChild(paymentMessage);
+            
+            // Автоматически убираем через 8 секунд
+            setTimeout(() => {
+                if (document.body.contains(paymentMessage)) {
+                    document.body.removeChild(paymentMessage);
+                }
+            }, 8000);
         }
-        
-        // 💡 ПРОВЕРЯЕМ АКТИВНА ЛИ РУЛЕТКА
-        function isRouletteActive() {
-            const rouletteSection = document.getElementById('rouletteSection');
-            return rouletteSection && rouletteSection.classList.contains('active');
-        }
-        
-        // 💡 ПРОВЕРЯЕМ ОТЛОЖЕННУЮ ПОДСКАЗКУ ПОСЛЕ РУЛЕТКИ
-        function checkPendingBonusHint() {
-            if (pendingBonusHint && balance === 0 && !bonusHintShown) {
-                console.log('💡 Рулетка завершена, показываем отложенную подсказку BONUS');
-                pendingBonusHint = false;
+
+        // Case event handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const cases = document.querySelectorAll('.case');
+            
+            cases.forEach(caseEl => {
+                const caseType = parseInt(caseEl.dataset.case);
+                const price = parseInt(caseEl.dataset.price);
                 
-                // Небольшая задержка для плавности UX
-                setTimeout(() => {
-                    showBonusModal();
-                }, 1000);
+                // 📊 ХОВЕР ЭФФЕКТ НА КОМПЬЮТЕРЕ - показать шансы
+                if (!('ontouchstart' in window)) { // Только для компьютеров
+                    caseEl.addEventListener('mouseenter', function() {
+                        showCaseTooltip(caseEl, caseType);
+                    });
+                    
+                    caseEl.addEventListener('mouseleave', function() {
+                        hideCaseTooltip(caseEl);
+                    });
+                }
+                
+                // Основной клик - открытие кейса
+                caseEl.addEventListener('click', function(e) {
+                    // НЕ открываем кейс если это правый клик или долгое нажатие
+                    if (e.button === 2 || e.detail === 0) return;
+                    
+                    e.preventDefault();
+                    openCase(caseType, price);
+                });
+                
+                // Правый клик или долгое нажатие - показать дропы
+                caseEl.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCaseDrops(caseType);
+                });
+                
+                // 📱 Долгое нажатие для мобильных устройств
+                let longPressTimer;
+                let isLongPress = false;
+                
+                caseEl.addEventListener('touchstart', function(e) {
+                    isLongPress = false;
+                    longPressTimer = setTimeout(() => {
+                        isLongPress = true;
+                        // Вибрация на мобильных (если поддерживается)
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                        showCaseDrops(caseType);
+                    }, 500); // 500ms для долгого нажатия
+                });
+                
+                caseEl.addEventListener('touchend', function(e) {
+                    clearTimeout(longPressTimer);
+                    if (isLongPress) {
+                        e.preventDefault(); // Не открываем кейс после долгого нажатия
+                    }
+                });
+                
+                caseEl.addEventListener('touchcancel', function() {
+                    clearTimeout(longPressTimer);
+                });
+            });
+        });
+        
+        // 💡 Функция показа подсказки с шансами при ховере
+        function showCaseTooltip(caseEl, caseType) {
+            // Проверяем есть ли уже подсказка
+            if (caseEl.querySelector('.case-tooltip')) return;
+            
+            const caseItems = items[caseType];
+            if (!caseItems) return;
+            
+            const casePrice = parseInt(caseEl.dataset.price);
+            
+            // Подсчитываем статистику шансов
+            let totalLoss = 0, totalBreakeven = 0, totalProfit = 0, totalJackpot = 0;
+            
+            caseItems.forEach(item => {
+                const dropType = getDropType(item, casePrice);
+                if (dropType === 'loss') totalLoss += item.chance;
+                else if (dropType === 'breakeven') totalBreakeven += item.chance;
+                else if (dropType === 'profit') totalProfit += item.chance;
+                else if (dropType === 'jackpot') totalJackpot += item.chance;
+            });
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'case-tooltip';
+            tooltip.innerHTML = `
+                <div style="color: #ffd700; font-size: 13px; font-weight: bold; margin-bottom: 8px; text-align: center;">
+                    📊 ШАНСЫ ВЫПАДЕНИЯ
+                </div>
+                <div style="font-size: 11px; line-height: 1.4;">
+                    <div style="color: #ff6b6b;">🔴 Убыток: <strong>${totalLoss.toFixed(1)}%</strong></div>
+                    <div style="color: #ffd700;">🟡 Окуп: <strong>${totalBreakeven.toFixed(1)}%</strong></div>
+                    <div style="color: #27ae60;">🟢 Профит: <strong>${totalProfit.toFixed(1)}%</strong></div>
+                    <div style="color: #8e44ad;">💎 Джекпот: <strong>${totalJackpot.toFixed(1)}%</strong></div>
+                </div>
+                <div style="text-align: center; margin-top: 8px; font-size: 10px; color: #95a5a6; font-style: italic;">
+                    ПКМ - все дропы
+                </div>
+            `;
+            
+            caseEl.appendChild(tooltip);
+        }
+        
+        function hideCaseTooltip(caseEl) {
+            const tooltip = caseEl.querySelector('.case-tooltip');
+            if (tooltip) {
+                caseEl.removeChild(tooltip);
+            }
+        }
+
+
+
+        // Winglist functionality
+        let winglistItems = [];
+        
+        function addToWinglist(item) {
+            // 🎨 СОХРАНЯЕМ ЦЕНУ КЕЙСА В ЭЛЕМЕНТ ВИНГДИСТА
+            item.casePrice = currentCasePrice;
+            winglistItems.unshift({
+                ...item,
+                timestamp: Date.now(),
+                playerName: userNickname
+            });
+            
+            // Ограничиваем размер вингдиста
+            if (winglistItems.length > 100) {
+                winglistItems = winglistItems.slice(0, 100);
+            }
+            
+            updateWinglist();
+            saveGameData(); // Save winglist
+        }
+        
+        function updateWinglist() {
+            const winglistItemsContainer = document.getElementById('winglist-items');
+            winglistItemsContainer.innerHTML = '';
+            
+            // Показываем последние 10 выигрышей
+            const displayItems = winglistItems.slice(0, 10);
+            
+            displayItems.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'winglist-item';
+                
+                // 🎨 ИСПРАВЛЕНО: Используем сохранённую цену кейса
+                const dropColor = getDropValueColor(item, item.casePrice || 200);
+                
+                itemEl.innerHTML = `
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 4px;
+                        background: ${dropColor}20;
+                        border-left: 3px solid ${dropColor};
+                        border-radius: 4px;
+                    ">
+                        <div style="
+                            width: 16px;
+                            height: 16px;
+                            background: ${dropColor};
+                            border-radius: 3px;
+                            flex-shrink: 0;
+                        "></div>
+                        <div style="flex-grow: 1; min-width: 0;">
+                            <div style="font-size: 11px; font-weight: bold; color: #fff; line-height: 1; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${item.playerName}
+                            </div>
+                            <div style="font-size: 9px; color: ${dropColor}; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${item.name} (${item.value} ꙮ)
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                winglistItemsContainer.appendChild(itemEl);
+            });
+            
+            // Показываем кнопку "Показать все" если есть скрытые элементы
+            const toggleButton = document.getElementById('winglist-toggle');
+            if (winglistItems.length > 10) {
+                toggleButton.style.display = 'block';
+                toggleButton.textContent = winglistItemsContainer.classList.contains('expanded') ? 
+                    'Скрыть ▲' : `Показать все (${winglistItems.length}) ▼`;
+            } else {
+                toggleButton.style.display = 'none';
             }
         }
         
-        function showBonusModal() {
-            // Проверяем, нет ли уже модалки
-            if (document.getElementById('bonus-modal')) return;
+        function toggleWinglist() {
+            const winglistItemsContainer = document.getElementById('winglist-items');
+            const toggleButton = document.getElementById('winglist-toggle');
             
-            const modal = document.createElement('div');
-            modal.id = 'bonus-modal';
-            modal.style.cssText = `
+            if (winglistItemsContainer.classList.contains('expanded')) {
+                // Сворачиваем - показываем только первые 10
+                winglistItemsContainer.classList.remove('expanded');
+                updateWinglist(); // Перерисовываем с ограничением
+                toggleButton.textContent = `Показать все (${winglistItems.length}) ▼`;
+            } else {
+                // Разворачиваем - показываем все
+                winglistItemsContainer.classList.add('expanded');
+                
+                // Очищаем и показываем все элементы
+                winglistItemsContainer.innerHTML = '';
+                winglistItems.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'winglist-item';
+                    
+                    // 🎨 ИСПРАВЛЕНО: Используем сохранённую цену кейса
+                    const dropColor = getDropValueColor(item, item.casePrice || 200);
+                    
+                    itemEl.innerHTML = `
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            padding: 4px;
+                            background: ${dropColor}20;
+                            border-left: 3px solid ${dropColor};
+                            border-radius: 4px;
+                        ">
+                            <div style="
+                                width: 16px;
+                                height: 16px;
+                                background: ${dropColor};
+                                border-radius: 3px;
+                                flex-shrink: 0;
+                            "></div>
+                            <div style="flex-grow: 1; min-width: 0;">
+                                <div style="font-size: 11px; font-weight: bold; color: #fff; line-height: 1; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${item.playerName}
+                                </div>
+                                <div style="font-size: 9px; color: ${dropColor}; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${item.name} (${item.value} ꙮ)
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    winglistItemsContainer.appendChild(itemEl);
+                });
+                
+                toggleButton.textContent = 'Скрыть ▲';
+            }
+        }
+
+        // 🎭 ЗАГРУЗКА ИЗОБРАЖЕНИЙ КЕЙСОВ (ЗАКРЫТЫЕ ВЕРСИИ)
+        function loadCaseImages() {
+            document.querySelectorAll('[data-case-num]').forEach(imageEl => {
+                const caseNum = imageEl.dataset.caseNum;
+                const imageName = `case${caseNum}_closed`; // ИСПРАВЛЕНО: используем _closed
+                
+                imageEl.textContent = '';
+                const img = new Image();
+                img.onload = () => {
+                    imageEl.style.backgroundImage = `url('${imageName}.png')`;
+                    imageEl.style.backgroundSize = 'cover';
+                    imageEl.style.backgroundPosition = 'center';
+                    imageEl.style.backgroundColor = '';
+                    imageEl.textContent = '';
+                };
+                img.onerror = () => {
+                    // Fallback для кейсов - показываем номер
+                    imageEl.style.backgroundImage = 'none';
+                    imageEl.style.backgroundColor = '#3498db';
+                    imageEl.style.display = 'flex';
+                    imageEl.style.alignItems = 'center';
+                    imageEl.style.justifyContent = 'center';
+                    imageEl.style.fontSize = '32px';
+                    imageEl.style.color = 'white';
+                    imageEl.style.fontWeight = 'bold';
+                    imageEl.textContent = caseNum;
+                };
+                img.src = `${imageName}.png`;
+            });
+        }
+
+        // Data persistence
+        function saveGameData() {
+            const gameData = {
+                balance: balance,
+                inventory: inventory,
+                userNickname: userNickname,
+                userAvatar: userAvatar,
+                winglistItems: winglistItems,
+                usedPromocodes: usedPromocodes,
+                hasDebt: hasDebt,
+                debtCasesLeft: debtCasesLeft,
+                debtAmount: debtAmount,
+                isBlocked: isBlocked,
+                socialRating: socialRating,
+                bonusHintShown: bonusHintShown || false,
+                warningMessageShown: warningMessageShown || false,
+                devModeActive: devModeActive || false,
+                bugWarningClosed: bugWarningClosed || false
+            };
+            
+            localStorage.setItem('caseOpeningGameData', JSON.stringify(gameData));
+            console.log('💾 Данные игры сохранены в localStorage');
+        }
+
+        function loadGameData() {
+            try {
+                const savedData = localStorage.getItem('caseOpeningGameData');
+                if (savedData) {
+                    const gameData = JSON.parse(savedData);
+                    
+                    balance = gameData.balance || 1000;
+                    inventory = gameData.inventory || [
+                        { name: 'Стартовый предмет', image: 'dropcase1_1', rarity: 'common', value: 10 }
+                    ];
+                    userNickname = gameData.userNickname || 'Игрок';
+                    userAvatar = gameData.userAvatar || null;
+                    winglistItems = gameData.winglistItems || [];
+                    usedPromocodes = gameData.usedPromocodes || [];
+                    
+                    // 🏛️ ЗАГРУЗКА ДАННЫХ ГОСДОЛГА
+                    hasDebt = gameData.hasDebt || false;
+                    debtCasesLeft = gameData.debtCasesLeft || 0;
+                    debtAmount = gameData.debtAmount || 500;
+                    isBlocked = gameData.isBlocked || false;
+                    socialRating = gameData.socialRating || 100;
+                    
+                    // 💡 ЗАГРУЗКА ФЛАГОВ ПОДСКАЗОК
+                    bonusHintShown = gameData.bonusHintShown || false;
+                    warningMessageShown = gameData.warningMessageShown || false;
+                    
+                    // 🛠️ ЗАГРУЗКА РЕЖИМА РАЗРАБОТЧИКА
+                    devModeActive = gameData.devModeActive || false;
+                    bugWarningClosed = gameData.bugWarningClosed || false;
+                    
+                    // Применяем аватар если есть
+                    if (userAvatar) {
+                        const profileAvatar = document.getElementById('profileAvatar');
+                        profileAvatar.style.backgroundImage = `url('${userAvatar}')`;
+                        profileAvatar.style.backgroundSize = 'cover';
+                        profileAvatar.style.backgroundPosition = 'center';
+                        profileAvatar.textContent = '';
+                    }
+                    
+                    console.log('📂 Данные игры загружены из localStorage');
+                    console.log(`💰 Баланс: ${balance}, Госдолг: ${hasDebt}, Блокировка: ${isBlocked}, Рейтинг: ${socialRating}`);
+                    console.log(`💡 Подсказки: BONUS=${bonusHintShown}, Здоровье=${warningMessageShown}`);
+                } else {
+                    console.log('📂 Сохранённых данных не найдено, используем значения по умолчанию');
+                }
+            } catch (error) {
+                console.log('❌ Ошибка загрузки данных:', error);
+            }
+        }
+
+        // 💡 СИСТЕМА ПОДСКАЗОК
+        let bonusHintShown = false; // Флаг показа подсказки BONUS
+        let pendingBonusHint = false; // Отложенная подсказка
+        let warningMessageShown = false; // Флаг показа предупреждения о здоровье
+        
+        // 💡 ПРОВЕРКА НУЛЕВОГО БАЛАНСА И ПОКАЗ ПОДСКАЗКИ
+        function checkZeroBalance() {
+            // Если баланс НЕ равен 0, скрываем или не показываем подсказку
+            if (balance !== 0) {
+                pendingBonusHint = false; // Сбрасываем отложенную подсказку
+                return;
+            }
+            
+            // Если подсказка уже была показана - не показываем повторно
+            if (bonusHintShown) {
+                return;
+            }
+            
+            // Если есть активная рулетка или модалки - откладываем показ
+            if (rouletteProtection || document.querySelector('.roulette-section.active') || 
+                document.querySelector('.profile-menu-modal.active') || 
+                document.querySelector('#baiki-error-modal')) {
+                pendingBonusHint = true;
+                console.log('💡 Подсказка BONUS отложена - активна рулетка или модалка');
+                return;
+            }
+            
+            // Показываем подсказку о промокоде BONUS
+            showBonusHint();
+        }
+        
+        // 💡 ПРОВЕРКА ОТЛОЖЕННОЙ ПОДСКАЗКИ
+        function checkPendingBonusHint() {
+            // Проверяем через небольшую задержку чтобы все модалки успели закрыться
+            setTimeout(() => {
+                if (pendingBonusHint && balance === 0 && !bonusHintShown && !rouletteProtection) {
+                    const activeModals = document.querySelector('.roulette-section.active') || 
+                                        document.querySelector('.profile-menu-modal.active') || 
+                                        document.querySelector('#baiki-error-modal') ||
+                                        document.querySelector('#debt-selection-modal');
+                    
+                    if (!activeModals) {
+                        showBonusHint();
+                        pendingBonusHint = false;
+                    }
+                }
+            }, 500);
+        }
+        
+        // 💡 ПОКАЗ ПОДСКАЗКИ О ПРОМОКОДЕ BONUS
+        function showBonusHint() {
+            if (bonusHintShown) return; // Уже показывали
+            
+            const hintModal = document.createElement('div');
+            hintModal.id = 'bonus-modal';
+            hintModal.style.cssText = `
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100vw;
                 height: 100vh;
-                background: rgba(0, 0, 0, 0.8);
-                z-index: 10007;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 10002;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -5431,48 +6329,38 @@ ${(() => {
             // Определяем мобильную версию
             const isMobile = window.innerWidth <= 768;
             
-            modal.innerHTML = `
+            hintModal.innerHTML = `
                 <div style="
-                    background: linear-gradient(135deg, #f39c12, #e67e22);
+                    background: linear-gradient(135deg, #f39c12, #d68910);
                     border: 3px solid #fff;
                     border-radius: ${isMobile ? '15px' : '20px'};
                     padding: ${isMobile ? '25px 20px' : '30px'};
                     text-align: center;
-                    max-width: ${isMobile ? '320px' : '450px'};
+                    max-width: ${isMobile ? '320px' : '400px'};
                     width: ${isMobile ? '90vw' : 'auto'};
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-                    animation: bonusModalPulse 2s ease-in-out infinite;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                    animation: bonusGlow 2s ease-in-out infinite;
                 ">
-                    <h2 style="color: #fff; font-size: ${isMobile ? '20px' : '24px'}; margin-bottom: ${isMobile ? '15px' : '20px'}; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-                        💡 НЕТ ДЕНЕГ? 💡
+                    <h2 style="color: #fff; font-size: ${isMobile ? '20px' : '24px'}; margin-bottom: ${isMobile ? '15px' : '20px'}; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                        💡 ПОДСКАЗКА 💡
                     </h2>
-                    <p style="color: #fff; font-size: ${isMobile ? '16px' : '18px'}; margin-bottom: ${isMobile ? '20px' : '25px'}; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                        Не расстраивайся!<br>
-                        У нас есть <strong style="color: #ffeb3b;">бесплатный промокод</strong> для тебя!
+                    <p style="color: #fff; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: ${isMobile ? '15px' : '20px'}; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                        У вас закончились соты!<br>
+                        Попробуйте использовать промокод<br>
+                        <strong style="color: #ffeb3b; font-size: ${isMobile ? '18px' : '22px'};">BONUS</strong>
                     </p>
                     <div style="
                         background: rgba(255,255,255,0.2);
-                        border-radius: ${isMobile ? '10px' : '12px'};
-                        padding: ${isMobile ? '15px' : '20px'};
+                        border-radius: ${isMobile ? '8px' : '10px'};
+                        padding: ${isMobile ? '12px' : '15px'};
                         margin-bottom: ${isMobile ? '20px' : '25px'};
                         border: 1px solid rgba(255,255,255,0.3);
                     ">
-                        <p style="color: #fff; font-size: ${isMobile ? '14px' : '16px'}; margin-bottom: 10px;">
-                            Введи промокод в настройках профиля:
+                        <p style="color: #fff; font-size: ${isMobile ? '12px' : '14px'}; margin: 0; line-height: 1.3;">
+                            📍 Откройте меню профиля (клик по аватару)<br>
+                            ✏️ Введите промокод: <strong style="color: #ffeb3b;">BONUS</strong><br>
+                            💰 Получите бонусные соты!
                         </p>
-                        <div style="
-                            background: rgba(0,0,0,0.3);
-                            border-radius: 8px;
-                            padding: 10px;
-                            border: 1px solid rgba(255,255,255,0.2);
-                        ">
-                            <div style="color: #ffeb3b; font-size: ${isMobile ? '18px' : '22px'}; font-weight: bold; text-shadow: 0 0 10px #ffeb3b;">
-                                BONUS
-                            </div>
-                            <div style="color: #fff; font-size: ${isMobile ? '12px' : '14px'}; margin-top: 5px;">
-                                +200 ꙮ на баланс!
-                            </div>
-                        </div>
                     </div>
                     <button onclick="closeBonusModal()" style="
                         background: #fff;
@@ -5480,778 +6368,148 @@ ${(() => {
                         border: none;
                         padding: ${isMobile ? '12px 25px' : '15px 30px'};
                         border-radius: ${isMobile ? '10px' : '12px'};
-                        font-size: ${isMobile ? '16px' : '18px'};
+                        font-size: ${isMobile ? '14px' : '16px'};
                         font-weight: bold;
                         cursor: pointer;
                         transition: all 0.3s ease;
                         box-shadow: 0 3px 10px rgba(0,0,0,0.3);
                         ${isMobile ? 'width: 100%; max-width: 200px;' : ''}
                     " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        👍 ПОНЯЛ!
+                        👍 Понятно!
                     </button>
                 </div>
             `;
             
-            // Добавляем анимацию пульсации
-            if (!document.getElementById('bonus-modal-pulse-style')) {
+            // Добавляем анимацию свечения
+            if (!document.getElementById('bonus-glow-style')) {
                 const style = document.createElement('style');
-                style.id = 'bonus-modal-pulse-style';
+                style.id = 'bonus-glow-style';
                 style.textContent = `
-                    @keyframes bonusModalPulse {
+                    @keyframes bonusGlow {
                         0%, 100% { 
-                            transform: scale(1);
-                            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.7);
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(243, 156, 18, 0.5);
                         }
                         50% { 
-                            transform: scale(1.02);
-                            box-shadow: 0 15px 40px rgba(243, 156, 18, 1), 0 0 50px rgba(243, 156, 18, 0.5);
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 40px rgba(243, 156, 18, 0.8);
                         }
                     }
                 `;
                 document.head.appendChild(style);
             }
             
-            document.body.appendChild(modal);
-            
-            console.log('💡 Показана менюшка с промокодом BONUS');
-        }
-        
-        function closeBonusModal() {
-            const modal = document.getElementById('bonus-modal');
-            if (modal) {
-                document.body.removeChild(modal);
-                bonusHintShown = true; // Помечаем что показали
-                saveGameData(); // Сохраняем флаг
-                console.log('💡 Менюшка BONUS закрыта, больше не показываем');
-            }
-        }
-        
-        // Эта функция больше не нужна, но оставляем для совместимости
-        function showMisclickPenalty() {
-            console.log('🚫 Функция штрафа отключена - рулетка теперь полностью заблокирована');
+            document.body.appendChild(hintModal);
+            console.log('💡 Показана подсказка о промокоде BONUS');
         }
 
-        // Fallback generated scream sound
-        function playGeneratedScream() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // 📱 АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+        function adaptForMobile() {
+            if (window.innerWidth <= 768) {
+                // Показываем мобильную подсказку, скрываем компьютерную
+                document.getElementById('desktop-hint').style.display = 'none';
+                document.getElementById('mobile-hint').style.display = 'block';
                 
-                // Create multiple oscillators for a scary sound
-                const oscillators = [];
-                const gainNode = audioContext.createGain();
-                gainNode.connect(audioContext.destination);
+                console.log('📱 Мобильная адаптация активирована');
+            } else {
+                // Показываем компьютерную подсказку, скрываем мобильную
+                document.getElementById('desktop-hint').style.display = 'block';
+                document.getElementById('mobile-hint').style.display = 'none';
                 
-                // Create chaotic frequency sweep
-                for (let i = 0; i < 3; i++) {
-                    const osc = audioContext.createOscillator();
-                    const oscGain = audioContext.createGain();
-                    
-                    osc.connect(oscGain);
-                    oscGain.connect(gainNode);
-                    
-                    // Scary frequency ranges
-                    const startFreq = 100 + (i * 200);
-                    const endFreq = 800 + (i * 300);
-                    
-                    osc.frequency.setValueAtTime(startFreq, audioContext.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + 0.5);
-                    osc.frequency.exponentialRampToValueAtTime(startFreq * 0.5, audioContext.currentTime + 1);
-                    
-                    oscGain.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    oscGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-                    
-                    osc.type = i % 2 === 0 ? 'sawtooth' : 'square'; // Harsh waveforms
-                    osc.start();
-                    osc.stop(audioContext.currentTime + 1);
-                    
-                    oscillators.push(osc);
+                console.log('🖥️ Компьютерная версия активирована');
+            }
+        }
+
+        // ⏰ ТАЙМЕР ОБРАТНОГО ОТСЧЁТА
+        function startCountdownTimer() {
+            const targetTime = new Date();
+            targetTime.setHours(23, 59, 59, 999); // До конца дня
+            
+            function updateCountdown() {
+                const now = new Date();
+                const timeLeft = targetTime - now;
+                
+                if (timeLeft <= 0) {
+                    // Если время истекло, сбрасываем на завтра
+                    targetTime.setDate(targetTime.getDate() + 1);
+                    targetTime.setHours(23, 59, 59, 999);
                 }
                 
-                // Main volume envelope
-                gainNode.gain.setValueAtTime(0.6, audioContext.currentTime); // Loud start
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
                 
-            } catch (e) {
-                console.log('Не удалось воспроизвести звук скримера:', e);
-            }
-        }
-
-        // 💡 ФЛАГИ ПОКАЗА ПОДСКАЗКИ BONUS
-        let bonusHintShown = false; // Показывалась ли уже подсказка BONUS
-        let pendingBonusHint = false; // Ожидает ли подсказка завершения рулетки
-        
-        // LocalStorage functions
-        function saveGameData() {
-            const gameData = {
-                balance: balance,
-                inventory: inventory,
-                nickname: userNickname,
-                avatar: userAvatar,
-                winglistItems: winglistItems,
-                usedPromocodes: usedPromocodes,
-                hasDebt: hasDebt,
-                debtCasesLeft: debtCasesLeft,
-                debtAmount: debtAmount,
-                isBlocked: isBlocked,
-                hasBadCredit: hasBadCredit,
-                bonusHintShown: bonusHintShown, // Сохраняем флаг показа подсказки
-                pendingBonusHint: pendingBonusHint // Сохраняем флаг отложенной подсказки
-            };
-            localStorage.setItem('caseOpenerGameData', JSON.stringify(gameData));
-
-        }
-
-        function loadGameData() {
-            const savedData = localStorage.getItem('caseOpenerGameData');
-            if (savedData) {
-                try {
-                    const gameData = JSON.parse(savedData);
-                    balance = gameData.balance || 1000;
-                    inventory = gameData.inventory || [
-                        { name: 'Стартовый предмет', image: 'dropcase1_1', rarity: 'common', value: 10 }
-                    ];
-                    userNickname = gameData.nickname || 'Игрок';
-                    userAvatar = gameData.avatar || null;
-                    winglistItems = gameData.winglistItems || [];
-                    usedPromocodes = gameData.usedPromocodes || [];
-                    hasDebt = gameData.hasDebt || false;
-                    debtCasesLeft = gameData.debtCasesLeft || 0;
-                    debtAmount = gameData.debtAmount || 500;
-                    isBlocked = gameData.isBlocked || false;
-                    hasBadCredit = gameData.hasBadCredit || false;
-                    bonusHintShown = gameData.bonusHintShown || false; // Загружаем флаг показа подсказки
-                    pendingBonusHint = gameData.pendingBonusHint || false; // Загружаем флаг отложенной подсказки
-                } catch (e) {
-                    console.log('Ошибка загрузки данных, используем значения по умолчанию');
+                const countdownEl = document.getElementById('countdownTimer');
+                if (countdownEl) {
+                    countdownEl.textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }
             }
             
-
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
         }
 
-        // Winglist functionality
-        let winglistItems = [];
-        let winglistExpanded = false;
-
-        function addToWinglist(item) {
-            winglistItems.unshift({
-                user: userNickname,
-                item: item,
-                timestamp: new Date()
-            });
-            
-            // Keep only last 10 items instead of 5
-            if (winglistItems.length > 10) {
-                winglistItems = winglistItems.slice(0, 10);
-            }
-            
-            updateWinglist();
-        }
-
-        function updateWinglist() {
-            const winglistContainer = document.getElementById('winglist-items');
-            const winglistToggle = document.getElementById('winglist-toggle');
-            winglistContainer.innerHTML = '';
-            
-            winglistItems.forEach((entry, index) => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'winglist-item';
-                
-                // Hide items after 2nd if not expanded
-                if (!winglistExpanded && index >= 2) {
-                    itemEl.classList.add('hidden');
-                }
-                
-                itemEl.innerHTML = `
-                    <div style="font-weight: bold; color: #fff;">${entry.user}</div>
-                    <div style="color: #ffd700;">${entry.item.name}</div>
-                    <div style="color: #ccc;">${entry.item.value} ꙮ</div>
-                `;
-                winglistContainer.appendChild(itemEl);
-            });
-            
-            // Show toggle button only if more than 2 items
-            if (winglistItems.length > 2) {
-                winglistToggle.style.display = 'block';
-                winglistToggle.innerHTML = winglistExpanded ? 
-                    'Свернуть ▲' : 
-                    `Показать все (${winglistItems.length}) ▼`;
-            } else {
-                winglistToggle.style.display = 'none';
-            }
-        }
-
-        function toggleWinglist() {
-            winglistExpanded = !winglistExpanded;
-            
-            const hiddenItems = document.querySelectorAll('.winglist-item.hidden');
-            const winglistContainer = document.getElementById('winglist-items');
-            
-            if (winglistExpanded) {
-                // Show all items
-                hiddenItems.forEach(item => {
-                    item.classList.remove('hidden');
-                });
-                winglistContainer.classList.add('expanded');
-            } else {
-                // Hide items after 2nd
-                const allItems = document.querySelectorAll('.winglist-item');
-                allItems.forEach((item, index) => {
-                    if (index >= 2) {
-                        item.classList.add('hidden');
-                    }
-                });
-                winglistContainer.classList.remove('expanded');
-            }
-            
-            updateWinglist();
-        }
-
-        // Countdown timer
-        let countdownTime = 3 * 60 * 60 + 25 * 60; // 3 hours 25 minutes in seconds
-
-        function updateCountdown() {
-            const hours = Math.floor(countdownTime / 3600);
-            const minutes = Math.floor((countdownTime % 3600) / 60);
-            const seconds = countdownTime % 60;
-            
-            const timerDisplay = document.getElementById('countdownTimer');
-            timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (countdownTime > 0) {
-                countdownTime--;
-            } else {
-                // Reset timer when it reaches 0
-                countdownTime = 3 * 60 * 60 + 25 * 60;
-            }
-        }
-
-        // Start countdown timer
-        setInterval(updateCountdown, 1000);
-
-        // Initialize case images
-        function initializeCaseImages() {
-            document.querySelectorAll('.case-image').forEach(caseImageEl => {
-                const caseNum = caseImageEl.dataset.caseNum;
-                const closedImg = new Image();
-                const openImg = new Image();
-                
-                closedImg.onload = () => {
-                    caseImageEl.style.backgroundImage = `url('case${caseNum}_closed.png')`;
+        // 👤 УСТАНОВКА ДЕФОЛТНОГО АВАТАРА
+        function setDefaultAvatar() {
+            if (!userAvatar) {
+                const profileAvatar = document.getElementById('profileAvatar');
+                const img = new Image();
+                img.onload = () => {
+                    profileAvatar.style.backgroundImage = `url('avatar.png')`;
+                    profileAvatar.style.backgroundSize = 'cover';
+                    profileAvatar.style.backgroundPosition = 'center';
+                    profileAvatar.textContent = '';
                 };
-                closedImg.onerror = () => {
-                    // Generate fallback image
-                    caseImageEl.style.backgroundImage = `url('keys/case${caseNum}_closed?prompt=treasure%20chest%20case%20box%20closed%20game%20item')`;
+                img.onerror = () => {
+                    // Если файл не найден, оставляем текстовую иконку
+                    profileAvatar.style.backgroundImage = 'none';
+                    profileAvatar.textContent = '👤';
                 };
-                closedImg.src = `case${caseNum}_closed.png`;
-                
-                // Preload open image
-                openImg.src = `case${caseNum}_open.png`;
-            });
+                img.src = 'avatar.png';
+            }
         }
 
-        // Простая система звуков - только основные
-        let rollSound = null;
-        let dropSound = null;
-        let errorSound = null;
-
-        // 🔊 ИСПРАВЛЕННЫЙ ЗВУК РУЛЕТКИ
-        function playRouletteSound() {
-            console.log('🎵 Запуск звука рулетки...');
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGameData();
+            updateBalance();
+            updateInventory();
+            updateWinglist();
+            updateDebtStatus();
+            loadCaseImages();
+            setDefaultAvatar();
+            adaptForMobile();
+            startCountdownTimer();
             
-            // Создаем новый аудио объект если нужно
-            if (!rollSound) {
-                rollSound = new Audio();
-                rollSound.volume = 0.4;
-                rollSound.loop = false;
-                rollSound.preload = 'auto';
+            // 🚫 ПОКАЗ БАННЕРА БЛОКИРОВКИ ЕСЛИ ЗАБЛОКИРОВАН
+            if (isBlocked) {
+                showBlockBanner();
             }
             
-            // Останавливаем предыдущий звук если играет
-            if (!rollSound.paused) {
-                rollSound.pause();
-                rollSound.currentTime = 0;
+            // 🛠️ ПОКАЗ РЕЖИМА РАЗРАБОТЧИКА ЕСЛИ АКТИВЕН
+            if (devModeActive) {
+                document.getElementById('dev-mode-banner').style.display = 'block';
+                console.log('🛠️ Режим разработчика восстановлен из сохранений');
             }
             
-            // СРАЗУ устанавливаем источник
-            rollSound.src = 'roulette_sound.mp3';
+            // 🚫 СКРЫТИЕ ПРЕДУПРЕЖДЕНИЯ О БАГАХ ЕСЛИ УЖЕ ЗАКРЫТО
+            if (bugWarningClosed) {
+                document.getElementById('bug-warning-banner').style.display = 'none';
+            }
             
-            // Обработчик успешной загрузки
-            rollSound.addEventListener('canplaythrough', function onCanPlay() {
-                rollSound.removeEventListener('canplaythrough', onCanPlay);
-                console.log('✅ roulette_sound.mp3 загружен, воспроизводим...');
-                
-                const playPromise = rollSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('🔊 Звук рулетки успешно воспроизводится!');
-                    }).catch(error => {
-                        console.log('❌ Ошибка воспроизведения:', error);
-                        playGeneratedRouletteSound();
-                    });
-                }
-            });
+            // ⚠️ ПОКАЗ ПРЕДУПРЕЖДЕНИЯ О ЗДОРОВЬЕ
+            showHealthWarning();
             
-            // Обработчик ошибки
-            rollSound.addEventListener('error', function onError() {
-                console.log('❌ roulette_sound.mp3 не найден, используем синтез');
-                playGeneratedRouletteSound();
-            });
-            
-            // Принудительная загрузка
-            rollSound.load();
-            
-            // Запасной таймер
+            // 💡 ПРОВЕРКА ПОДСКАЗКИ ПРИ ЗАГРУЗКЕ
             setTimeout(() => {
-                if (rollSound.readyState < 3) {
-                    console.log('⏰ Файл не загрузился за 1с, запускаем синтез');
-                    playGeneratedRouletteSound();
-                }
-            }, 1000);
-        }
-
-        // 🎵 ИСПРАВЛЕННЫЙ ЗВУК ВЫПАДЕНИЯ ДРОПА
-        function playDropSound() {
-            console.log('🎵 Запуск звука дропа...');
+                checkZeroBalance();
+            }, 1000); // Задержка чтобы интерфейс успел загрузиться
             
-            // Создаем НОВЫЙ аудио объект каждый раз - это предотвратит повторы
-            dropSound = new Audio();
-            dropSound.volume = 0.6;
-            dropSound.preload = 'auto';
-            
-            // Останавливаем звук рулетки если играет
-            if (rollSound && !rollSound.paused) {
-                rollSound.pause();
-                rollSound.currentTime = 0;
-            }
-            
-            dropSound.addEventListener('canplaythrough', function onCanPlay() {
-                dropSound.removeEventListener('canplaythrough', onCanPlay);
-                console.log('✅ drop_sound.mp3 загружен, воспроизводим...');
-                
-                const playPromise = dropSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('🔊 Звук дропа успешно воспроизводится!');
-                    }).catch(error => {
-                        console.log('❌ Ошибка воспроизведения drop_sound.mp3:', error);
-                    });
-                }
-            });
-            
-            dropSound.addEventListener('error', function onError() {
-                console.log('❌ drop_sound.mp3 не найден');
-            });
-            
-            // Устанавливаем источник и загружаем
-            dropSound.src = 'drop_sound.mp3';
-            dropSound.load();
-        }
-        
-        // 🔇 ФУНКЦИЯ ОСТАНОВКИ ЗВУКА ДРОПА
-        function stopDropSound() {
-            if (dropSound && !dropSound.paused) {
-                dropSound.pause();
-                dropSound.currentTime = 0;
-                console.log('🔇 Звук дропа остановлен');
-            }
-            
-            // Также останавливаем уникальный звук Флэшбека
-            if (flashbackDropSound && !flashbackDropSound.paused) {
-                flashbackDropSound.pause();
-                flashbackDropSound.currentTime = 0;
-                console.log('🔇 Звук Флэшбека остановлен');
-            }
-        }
-        
-        // 🔇 УЛУЧШЕННАЯ ФУНКЦИЯ ОСТАНОВКИ ВСЕХ ЗВУКОВ
-        function stopAllSounds() {
-            console.log('🔇 Останавливаем все звуки...');
-            
-            try {
-                // Останавливаем звук рулетки
-                if (rollSound) {
-                    rollSound.pause();
-                    rollSound.currentTime = 0;
-                    // Очищаем обработчики событий
-                    rollSound.oncanplaythrough = null;
-                    rollSound.onerror = null;
-                    console.log('🔇 Звук рулетки остановлен');
-                }
-            } catch (e) {
-                console.log('⚠️ Ошибка остановки звука рулетки:', e);
-            }
-            
-            try {
-                // Останавливаем звук дропа
-                if (dropSound) {
-                    dropSound.pause();
-                    dropSound.currentTime = 0;
-                    // Очищаем обработчики событий
-                    dropSound.oncanplaythrough = null;
-                    dropSound.onerror = null;
-                    console.log('🔇 Звук дропа остановлен');
-                }
-            } catch (e) {
-                console.log('⚠️ Ошибка остановки звука дропа:', e);
-            }
-            
-            try {
-                // Останавливаем звук Флэшбека
-                if (flashbackDropSound) {
-                    flashbackDropSound.pause();
-                    flashbackDropSound.currentTime = 0;
-                    // Очищаем обработчики событий
-                    flashbackDropSound.oncanplaythrough = null;
-                    flashbackDropSound.onerror = null;
-                    console.log('🔇 Звук Флэшбека остановлен');
-                }
-            } catch (e) {
-                console.log('⚠️ Ошибка остановки звука Флэшбека:', e);
-            }
-            
-            try {
-                // Останавливаем звук ошибки
-                if (errorSound) {
-                    errorSound.pause();
-                    errorSound.currentTime = 0;
-                    errorSound.oncanplaythrough = null;
-                    errorSound.onerror = null;
-                    console.log('🔇 Звук ошибки остановлен');
-                }
-            } catch (e) {
-                console.log('⚠️ Ошибка остановки звука ошибки:', e);
-            }
-            
-            console.log('✅ Все звуки остановлены и очищены!');
-        }
-
-        // Fallback generated roulette sound
-        function playGeneratedRouletteSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // Звук прокрутки рулетки - нарастающий гул
-                oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 3);
-                oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 5);
-                
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + 1);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 5);
-                
-                oscillator.type = 'sawtooth';
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 5);
-            } catch (e) {
-                console.log('Не удалось воспроизвести звук рулетки:', e);
-            }
-        }
-
-        // 🎵 СИСТЕМА ЗВУКОВ С УНИКАЛЬНЫМ ЗВУКОМ ДЛЯ ФЛЭШБЕКА
-        function playDropSoundByRarity(item) {
-            console.log(`🎵 Проверяем звук для дропа: ${item.name}`);
-            
-            // 🎬 СПЕЦИАЛЬНЫЙ ЗВУК ДЛЯ ФЛЭШБЕКА
-            if (item.name === 'Флэшбек') {
-                console.log('🎬 Воспроизводим специальный звук для Флэшбека!');
-                playFlashbackDropSound();
-                return;
-            }
-            
-            // Для всех остальных дропов - универсальный звук
-            playDropSound();
-        }
-        
-
-        
-
-
-
-
-        // 📊 СОЗДАНИЕ ПОДСКАЗКИ ДЛЯ КЕЙСА
-        function createCaseTooltip(caseType, casePrice) {
-            const chances = {
-                2: { loss: 30.0, breakeven: 45.0, profit: 23.0, jackpot: 2.0 }, // Кизик
-                3: { loss: 23.0, breakeven: 38.0, profit: 37.9, jackpot: 1.5 }, // Жало
-                4: { loss: 32.0, breakeven: 33.0, profit: 32.0, jackpot: 3.0 }, // Шер
-                7: { loss: 26.0, breakeven: 30.0, profit: 41.5, jackpot: 2.5 }  // ЧВК
-            };
-            
-            const data = chances[caseType];
-            if (!data) return null;
-            
-            const tooltip = document.createElement('div');
-            tooltip.className = 'case-tooltip';
-            const isMobile = window.innerWidth <= 768;
-            
-            tooltip.innerHTML = `
-                <div style="font-size: ${isMobile ? '9px' : '11px'}; line-height: ${isMobile ? '1.2' : '1.3'}; text-align: left;">
-                    <div style="color: #e74c3c; margin-bottom: 2px;">🔴 Убыточные: <strong>${data.loss}%</strong></div>
-                    <div style="color: #f1c40f; margin-bottom: 2px;">🟡 Окупаемые: <strong>${data.breakeven}%</strong></div>
-                    <div style="color: #27ae60; margin-bottom: 2px;">🟢 Прибыльные: <strong>${data.profit}%</strong></div>
-                    <div style="color: #8e44ad;">💎 Джекпоты: <strong>${data.jackpot}%</strong></div>
-                </div>
-            `;
-            return tooltip;
-        }
-
-        // Add event listeners to cases
-        document.querySelectorAll('.case').forEach(caseEl => {
-            const caseImageEl = caseEl.querySelector('.case-image');
-            const caseNum = caseImageEl.dataset.caseNum;
-            const caseType = caseEl.dataset.case;
-            const casePrice = parseInt(caseEl.dataset.price);
-            
-            // 💡 ДОБАВЛЯЕМ ВСПЛЫВАЮЩУЮ ПОДСКАЗКУ К КЕЙСУ
-            const tooltip = createCaseTooltip(caseType, casePrice);
-            if (tooltip) {
-                // Добавляем position: relative к кейсу для правильного позиционирования
-                caseEl.style.position = 'relative';
-                caseEl.appendChild(tooltip);
-            }
-            
-            // Левый клик - открытие кейса
-            caseEl.addEventListener('click', () => {
-                const caseType = caseEl.dataset.case;
-                const price = parseInt(caseEl.dataset.price);
-                
-                // 🛡️ ПРОВЕРЯЕМ КУЛДАУН ПЕРЕД ВЫЗОВОМ
-                const now = Date.now();
-                if (caseCooldowns[caseType] && now - caseCooldowns[caseType] < 2000) {
-                    const remainingTime = Math.ceil((2000 - (now - caseCooldowns[caseType])) / 1000);
-                    console.log(`⏰ Кейс на кулдауне! Осталось: ${remainingTime}с`);
-                    
-                    // Визуальная обратная связь
-                    caseEl.style.transform = 'scale(0.95)';
-                    caseEl.style.opacity = '0.6';
-                    setTimeout(() => {
-                        caseEl.style.transform = '';
-                        caseEl.style.opacity = '';
-                    }, 200);
-                    return;
-                }
-                
-                // Always allow clicks, handle insufficient funds in openCase
-                openCase(caseType, price);
-            });
-            
-            // Правый клик - просмотр дропов
-            caseEl.addEventListener('contextmenu', (e) => {
-                e.preventDefault(); // Отключаем стандартное контекстное меню
-                const caseType = caseEl.dataset.case;
-                showCaseDrops(caseType);
-            });
-            
-            // 📱 МОБИЛЬНЫЕ СОБЫТИЯ ДЛЯ ПОДСКАЗОК И ДРОПОВ
-            let longPressTimer = null;
-            let tooltipTimer = null;
-            
-            caseEl.addEventListener('touchstart', (e) => {
-                // Сбрасываем предыдущие флаги при новом касании
-                caseEl.longPressTriggered = false;
-                e.touchMoved = false;
-                
-                // Показываем подсказку через 300ms
-                tooltipTimer = setTimeout(() => {
-                    if (tooltip) {
-                        tooltip.style.opacity = '1';
-                        tooltip.style.transform = 'translateX(-50%) translateY(-100%) translateY(-5px)';
-                    }
-                }, 300);
-                
-                // Долгое нажатие для подробных дропов через 1200ms
-                longPressTimer = setTimeout(() => {
-                    const caseType = caseEl.dataset.case;
-                    
-                    // ВАЖНО: Устанавливаем флаг ПЕРЕД показом дропов
-                    caseEl.longPressTriggered = true;
-                    console.log('📱 ДОЛГОЕ НАЖАТИЕ СРАБОТАЛО - флаг установлен');
-                    
-                    showCaseDrops(caseType);
-                    
-                    // Вибрация на мобильных устройствах
-                    if (navigator.vibrate) {
-                        navigator.vibrate(150);
-                    }
-                }, 1200);
-            });
-            
-            caseEl.addEventListener('touchend', (e) => {
-                const wasMoved = e.touchMoved || false;
-                const wasLongPress = caseEl.longPressTriggered || false;
-                
-                // Останавливаем таймеры
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
-                
-                // Скрываем подсказку
-                if (tooltip) {
-                    tooltip.style.opacity = '0';
-                    tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
-                }
-                
-                // ИСПРАВЛЕНО: Если было долгое нажатие - НЕ открываем кейс вообще!
-                if (wasLongPress) {
-                    console.log('📱 ДОЛГОЕ НАЖАТИЕ - НЕ открываем кейс, только показали дропы');
-                    // Сбрасываем флаги и выходим
-                    caseEl.longPressTriggered = false;
-                    e.touchMoved = false;
-                    return; // ВАЖНО: выходим и не открываем кейс!
-                }
-                
-                // Открываем кейс ТОЛЬКО если это был короткий тап без движения
-                if (!wasMoved) {
-                    const caseType = caseEl.dataset.case;
-                    const price = parseInt(caseEl.dataset.price);
-                    
-                    console.log('📱 КОРОТКИЙ ТАП - открываем кейс:', caseType);
-                    
-                    // Небольшая задержка чтобы скрыть подсказку
-                    setTimeout(() => {
-                        openCase(caseType, price);
-                    }, 100);
-                }
-                
-                // Сбрасываем флаги после обработки
-                caseEl.longPressTriggered = false;
-                e.touchMoved = false;
-            });
-            
-            caseEl.addEventListener('touchmove', (e) => {
-                // Отмечаем что было движение
-                e.touchMoved = true;
-                
-                // Сбрасываем флаг долгого нажатия при движении
-                caseEl.longPressTriggered = false;
-                
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
-                // Скрываем подсказку при движении
-                if (tooltip) {
-                    tooltip.style.opacity = '0';
-                    tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
-                }
-            });
-            
-            // Hover effects
-            caseEl.addEventListener('mouseenter', () => {
-                const openImg = new Image();
-                openImg.onload = () => {
-                    caseImageEl.style.backgroundImage = `url('case${caseNum}_open.png')`;
-                };
-                openImg.onerror = () => {
-                    caseImageEl.style.backgroundImage = `url('keys/case${caseNum}_open?prompt=treasure%20chest%20case%20box%20open%20game%20item')`;
-                };
-                openImg.src = `case${caseNum}_open.png`;
-            });
-            
-            caseEl.addEventListener('mouseleave', () => {
-                const closedImg = new Image();
-                closedImg.onload = () => {
-                    caseImageEl.style.backgroundImage = `url('case${caseNum}_closed.png')`;
-                };
-                closedImg.onerror = () => {
-                    caseImageEl.style.backgroundImage = `url('keys/case${caseNum}_closed?prompt=treasure%20chest%20case%20box%20closed%20game%20item')`;
-                };
-                closedImg.src = `case${caseNum}_closed.png`;
-            });
+            console.log('🎮 Игра инициализирована!');
+            console.log(`💰 Баланс: ${balance} ꙮ, Долг: ${hasDebt}, Блокировка: ${isBlocked}, Рейтинг: ${socialRating}`);
         });
 
-        // Avatar loading
-        function loadAvatar() {
-            const avatarEl = document.getElementById('profileAvatar');
-            
-            if (userAvatar) {
-                // Загружаем сохранённый аватар пользователя
-                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
-                avatarEl.style.backgroundSize = 'cover';
-                avatarEl.style.backgroundPosition = 'center';
-                avatarEl.textContent = '';
-                console.log('✅ Загружен сохранённый аватар пользователя');
-            } else {
-                // Пытаемся загрузить avatar.png как запасной вариант
-                const avatarImg = new Image();
-                
-                avatarImg.onload = () => {
-                    avatarEl.style.backgroundImage = `url('avatar.png')`;
-                    avatarEl.style.backgroundSize = 'cover';
-                    avatarEl.style.backgroundPosition = 'center';
-                    avatarEl.textContent = '';
-                    console.log('✅ Загружен avatar.png');
-                };
-                
-                avatarImg.onerror = () => {
-                    // Оставляем дефолтный аватар
-                    avatarEl.style.backgroundImage = 'none';
-                    avatarEl.textContent = '👤';
-                    console.log('📷 Используется дефолтный аватар');
-                };
-                
-                avatarImg.src = 'avatar.png';
-            }
-        }
-
-        // 📱 АДАПТАЦИЯ ПОДСКАЗОК ДЛЯ МОБИЛЬНЫХ
-        function adaptHintsForMobile() {
-            const isMobile = window.innerWidth <= 768;
-            const desktopHint = document.getElementById('desktop-hint');
-            const mobileHint = document.getElementById('mobile-hint');
-            
-            if (isMobile) {
-                // Показываем мобильную подсказку
-                if (desktopHint) desktopHint.style.display = 'none';
-                if (mobileHint) mobileHint.style.display = 'block';
-                console.log('📱 Переключено на мобильные подсказки');
-            } else {
-                // Показываем компьютерную подсказку
-                if (desktopHint) desktopHint.style.display = 'block';
-                if (mobileHint) mobileHint.style.display = 'none';
-                console.log('🖥️ Переключено на компьютерные подсказки');
-            }
-        }
-
-        // Функции удалены - возвращена простая система
-        
-        // Функция удалена - используем loadDropImage
-        
-        // Функция удалена - используем простую загрузку изображений
-        
-
-        
-
-
-        // Инициализация
-        loadGameData();
-        updateBalance();
-        updateInventory();
-        updateDebtStatus();
-        initializeCaseImages();
-        updateWinglist();
-        updateCountdown();
-        loadAvatar();
-        adaptHintsForMobile();
-        
-        if (isBlocked) showBlockBanner();
-        checkZeroBalance();
-        window.addEventListener('resize', adaptHintsForMobile);
+        // Handle window resize for mobile adaptation
+        window.addEventListener('resize', adaptForMobile);
     </script>
 </body>
 </html>
