@@ -1842,7 +1842,12 @@
         ];
         let userNickname = 'Игрок';
         let userAvatar = null; // Хранит base64 данные аватара
-        // Переменные для кликов по балансу убраны
+        
+        // 🎲 СИСТЕМА "РЕЗИНОВОЙ ЭКОНОМИКИ"
+        let economyBalance = 0; // Баланс экономики: + = игрок в плюсе, - = игрок в минусе
+        let economyStreak = 0; // Подряд выигрышей/проигрышей
+        let totalSpent = 0; // Всего потрачено на кейсы
+        let totalWon = 0; // Всего выиграно с кейсов
         
         // Защита от мискликов
         let rouletteProtection = false; // Флаг защиты рулетки
@@ -2028,23 +2033,24 @@
                 { name: 'Каска-Глиста', image: 'dropcase5_2', rarity: 'legendary', value: 1200, chance: 0.5 }
             ],
             6: [ // Кейс "Меофен" 100 ꙮ
-                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (40% общий шанс)
-                { name: 'Пластиковая Модель', image: 'dropcase6_8', rarity: 'common', value: 40, chance: 15 },
-                { name: 'Филамент', image: 'dropcase6_6', rarity: 'common', value: 65, chance: 15 },
-                { name: 'Сопло принтера', image: 'dropcase6_3', rarity: 'common', value: 85, chance: 10 },
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (35% общий шанс - СНИЖЕНО)
+                { name: 'Пластиковая Модель', image: 'dropcase6_8', rarity: 'common', value: 40, chance: 12 },
+                { name: 'Филамент', image: 'dropcase6_6', rarity: 'common', value: 65, chance: 12 },
+                { name: 'Сопло принтера', image: 'dropcase6_3', rarity: 'common', value: 85, chance: 11 },
                 
-                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (39% общий шанс)
-                { name: 'Стол для принтера', image: 'dropcase6_7', rarity: 'rare', value: 115, chance: 16 },
-                { name: '3D принтер', image: 'dropcase6_2', rarity: 'rare', value: 135, chance: 14 },
-                { name: 'Нано-принтер', image: 'dropcase6_10', rarity: 'rare', value: 300, chance: 9 },
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (42% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Стол для принтера', image: 'dropcase6_7', rarity: 'rare', value: 115, chance: 17 },
+                { name: '3D принтер', image: 'dropcase6_2', rarity: 'rare', value: 135, chance: 15 },
+                { name: 'Нано-принтер', image: 'dropcase6_10', rarity: 'rare', value: 300, chance: 10 },
                 
                 // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
                 { name: 'Промышленный принтер', image: 'dropcase6_4', rarity: 'epic', value: 210, chance: 10 },
                 { name: 'Металлический принтер', image: 'dropcase6_9', rarity: 'epic', value: 280, chance: 6 },
                 { name: 'Лазерный гравёр', image: 'dropcase6_5', rarity: 'epic', value: 350, chance: 3 },
                 
-                // 💎 ЛЕГЕНДАРНЫЙ ДРОП (1% общий шанс)
-                { name: 'Шляпа-Меофена', image: 'dropcase6_1', rarity: 'legendary', value: 500, chance: 1 }
+                // 💎 ДЖЕКПОТЫ (3% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Шляпа-Меофена', image: 'dropcase6_1', rarity: 'legendary', value: 500, chance: 2 },
+                { name: 'Квантовый принтер', image: 'dropcase6_1', rarity: 'legendary', value: 800, chance: 1 }
             ],
             7: [ // Кейс "ЧВК" 250 ꙮ
                 // 🔴 УБЫТОЧНЫЕ ДРОПЫ (26% общий шанс)
@@ -2066,55 +2072,61 @@
                 { name: 'РПГ-7', image: 'dropcase7_4', rarity: 'legendary', value: 2500, chance: 1 }
             ],
             8: [ // Кейс "Берег" 180 ꙮ
-                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (38% общий шанс)
-                { name: 'Дроп 8-6', image: 'dropcase8_6', rarity: 'common', value: 75, chance: 17 },
-                { name: 'Дроп 8-2', image: 'dropcase8_2', rarity: 'common', value: 115, chance: 11 },
-                { name: 'Дроп 8-1', image: 'dropcase8_1', rarity: 'common', value: 155, chance: 10 },
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (32% общий шанс - СНИЖЕНО)
+                { name: 'Дроп 8-6', image: 'dropcase8_6', rarity: 'common', value: 75, chance: 14 },
+                { name: 'Дроп 8-2', image: 'dropcase8_2', rarity: 'common', value: 115, chance: 10 },
+                { name: 'Дроп 8-1', image: 'dropcase8_1', rarity: 'common', value: 155, chance: 8 },
                 
-                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (42% общий шанс)
-                { name: 'Дроп 8-7', image: 'dropcase8_7', rarity: 'rare', value: 220, chance: 24 },
-                { name: 'Дроп 8-3', image: 'dropcase8_3', rarity: 'rare', value: 280, chance: 18 },
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (48% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 8-7', image: 'dropcase8_7', rarity: 'rare', value: 220, chance: 26 },
+                { name: 'Дроп 8-3', image: 'dropcase8_3', rarity: 'rare', value: 280, chance: 22 },
                 
-                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
-                { name: 'Дроп 8-9', image: 'dropcase8_9', rarity: 'epic', value: 380, chance: 10 },
-                { name: 'Дроп 8-8', image: 'dropcase8_8', rarity: 'epic', value: 500, chance: 6 },
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (17% общий шанс)
+                { name: 'Дроп 8-9', image: 'dropcase8_9', rarity: 'epic', value: 380, chance: 9 },
+                { name: 'Дроп 8-8', image: 'dropcase8_8', rarity: 'epic', value: 500, chance: 5 },
                 { name: 'Дроп 8-4', image: 'dropcase8_4', rarity: 'epic', value: 650, chance: 3 },
-                { name: 'Дроп 8-10', image: 'dropcase8_10', rarity: 'legendary', value: 450, chance: 0.8 },
-                { name: 'Дроп 8-5', image: 'dropcase8_5', rarity: 'legendary', value: 600, chance: 0.2 }
+                
+                // 💎 ДЖЕКПОТЫ (3% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 8-10', image: 'dropcase8_10', rarity: 'legendary', value: 900, chance: 1.5 },
+                { name: 'Дроп 8-5', image: 'dropcase8_5', rarity: 'legendary', value: 1200, chance: 1.5 }
             ],
             9: [ // Кейс "Молот" 220 ꙮ
-                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (39% общий шанс)
-                { name: 'Дроп 9-3', image: 'dropcase9_3', rarity: 'common', value: 90, chance: 17 },
-                { name: 'Дроп 9-2', image: 'dropcase9_2', rarity: 'common', value: 135, chance: 12 },
-                { name: 'Дроп 9-8', image: 'dropcase9_8', rarity: 'common', value: 180, chance: 10 },
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (33% общий шанс - СНИЖЕНО)
+                { name: 'Дроп 9-3', image: 'dropcase9_3', rarity: 'common', value: 90, chance: 15 },
+                { name: 'Дроп 9-2', image: 'dropcase9_2', rarity: 'common', value: 135, chance: 10 },
+                { name: 'Дроп 9-8', image: 'dropcase9_8', rarity: 'common', value: 180, chance: 8 },
                 
-                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (41% общий шанс)
-                { name: 'Дроп 9-6', image: 'dropcase9_6', rarity: 'rare', value: 260, chance: 23 },
-                { name: 'Дроп 9-7', image: 'dropcase9_7', rarity: 'rare', value: 320, chance: 18 },
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (47% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 9-6', image: 'dropcase9_6', rarity: 'rare', value: 260, chance: 25 },
+                { name: 'Дроп 9-7', image: 'dropcase9_7', rarity: 'rare', value: 320, chance: 22 },
                 
-                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
-                { name: 'Дроп 9-1', image: 'dropcase9_1', rarity: 'epic', value: 460, chance: 10 },
-                { name: 'Дроп 9-4', image: 'dropcase9_4', rarity: 'epic', value: 600, chance: 6 },
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (17% общий шанс)
+                { name: 'Дроп 9-1', image: 'dropcase9_1', rarity: 'epic', value: 460, chance: 9 },
+                { name: 'Дроп 9-4', image: 'dropcase9_4', rarity: 'epic', value: 600, chance: 5 },
                 { name: 'Дроп 9-10', image: 'dropcase9_10', rarity: 'epic', value: 780, chance: 3 },
-                { name: 'Дроп 9-9', image: 'dropcase9_9', rarity: 'legendary', value: 500, chance: 0.8 },
-                { name: 'Дроп 9-5', image: 'dropcase9_5', rarity: 'legendary', value: 700, chance: 0.2 }
+                
+                // 💎 ДЖЕКПОТЫ (3% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 9-9', image: 'dropcase9_9', rarity: 'legendary', value: 1100, chance: 1.5 },
+                { name: 'Дроп 9-5', image: 'dropcase9_5', rarity: 'legendary', value: 1500, chance: 1.5 }
             ],
             10: [ // Кейс "Вихрь" 160 ꙮ
-                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (40% общий шанс)
-                { name: 'Дроп 10-3', image: 'dropcase10_3', rarity: 'common', value: 65, chance: 18 },
-                { name: 'Дроп 10-6', image: 'dropcase10_6', rarity: 'common', value: 100, chance: 12 },
-                { name: 'Дроп 10-2', image: 'dropcase10_2', rarity: 'common', value: 135, chance: 10 },
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (34% общий шанс - СНИЖЕНО)
+                { name: 'Дроп 10-3', image: 'dropcase10_3', rarity: 'common', value: 65, chance: 16 },
+                { name: 'Дроп 10-6', image: 'dropcase10_6', rarity: 'common', value: 100, chance: 10 },
+                { name: 'Дроп 10-2', image: 'dropcase10_2', rarity: 'common', value: 135, chance: 8 },
                 
-                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (40% общий шанс)
-                { name: 'Дроп 10-1', image: 'dropcase10_1', rarity: 'rare', value: 180, chance: 22 },
-                { name: 'Дроп 10-7', image: 'dropcase10_7', rarity: 'rare', value: 240, chance: 18 },
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (46% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 10-1', image: 'dropcase10_1', rarity: 'rare', value: 180, chance: 24 },
+                { name: 'Дроп 10-7', image: 'dropcase10_7', rarity: 'rare', value: 240, chance: 22 },
                 
-                //🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
-                { name: 'Дроп 10-8', image: 'dropcase10_8', rarity: 'epic', value: 340, chance: 10 },
-                { name: 'Дроп 10-4', image: 'dropcase10_4', rarity: 'epic', value: 450, chance: 6 },
+                //🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (17% общий шанс)
+                { name: 'Дроп 10-8', image: 'dropcase10_8', rarity: 'epic', value: 340, chance: 9 },
+                { name: 'Дроп 10-4', image: 'dropcase10_4', rarity: 'epic', value: 450, chance: 5 },
                 { name: 'Дроп 10-10', image: 'dropcase10_10', rarity: 'epic', value: 580, chance: 3 },
-                { name: 'Дроп 10-9', image: 'dropcase10_9', rarity: 'legendary', value: 400, chance: 0.8 },
-                { name: 'Дроп 10-5', image: 'dropcase10_5', rarity: 'legendary', value: 550, chance: 0.2 }
+                
+                // 💎 ДЖЕКПОТЫ (3% общий шанс - УВЕЛИЧЕНО)
+                { name: 'Дроп 10-9', image: 'dropcase10_9', rarity: 'legendary', value: 800, chance: 1.5 },
+                { name: 'Дроп 10-5', image: 'dropcase10_5', rarity: 'legendary', value: 1100, chance: 1.5 }
             ],
             11: [ // Кейс "Призрак" 350 ꙮ
                 // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс)
@@ -2269,22 +2281,22 @@
                 { name: 'Дроп 19-5', image: 'dropcase19_5', rarity: 'legendary', value: 3100, chance: 0.4 },
                 { name: 'Дроп 19-10', image: 'dropcase19_10', rarity: 'legendary', value: 4800, chance: 0.1 }
             ],
-            20: [ // Кейс "Вечность" 750 ꙮ
-                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (32% общий шанс)
-                { name: 'Дроп 20-3', image: 'dropcase20_3', rarity: 'common', value: 300, chance: 14 },
-                { name: 'Дроп 20-6', image: 'dropcase20_6', rarity: 'common', value: 450, chance: 9 },
-                { name: 'Дроп 20-2', image: 'dropcase20_2', rarity: 'common', value: 600, chance: 9 },
+            20: [ // Кейс "Вечность" 750 ꙮ - ИСПРАВЛЕННАЯ ЭКОНОМИКА
+                // 🔴 УБЫТОЧНЫЕ ДРОПЫ (65% общий шанс - КАК НАДО!)
+                { name: 'Дроп 20-3', image: 'dropcase20_3', rarity: 'common', value: 300, chance: 30 },
+                { name: 'Дроп 20-6', image: 'dropcase20_6', rarity: 'common', value: 450, chance: 20 },
+                { name: 'Дроп 20-2', image: 'dropcase20_2', rarity: 'common', value: 600, chance: 15 },
                 
-                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (48% общий шанс)
-                { name: 'Дроп 20-1', image: 'dropcase20_1', rarity: 'rare', value: 900, chance: 26 },
-                { name: 'Дроп 20-7', image: 'dropcase20_7', rarity: 'rare', value: 1125, chance: 22 },
+                // 🟡 ОКУПАЕМЫЕ ДРОПЫ (25% общий шанс)
+                { name: 'Дроп 20-1', image: 'dropcase20_1', rarity: 'rare', value: 900, chance: 15 },
+                { name: 'Дроп 20-7', image: 'dropcase20_7', rarity: 'rare', value: 1125, chance: 10 },
                 
-                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (20% общий шанс)
-                { name: 'Дроп 20-8', image: 'dropcase20_8', rarity: 'epic', value: 1575, chance: 10 },
-                { name: 'Дроп 20-4', image: 'dropcase20_4', rarity: 'epic', value: 2100, chance: 6 },
-                { name: 'Дроп 20-9', image: 'dropcase20_9', rarity: 'epic', value: 2700, chance: 3 },
-                { name: 'Дроп 20-5', image: 'dropcase20_5', rarity: 'legendary', value: 3900, chance: 0.8 },
-                { name: 'Дроп 20-10', image: 'dropcase20_10', rarity: 'legendary', value: 6000, chance: 0.2 }
+                // 🟢 ПРИБЫЛЬНЫЕ ДРОПЫ (10% общий шанс)
+                { name: 'Дроп 20-8', image: 'dropcase20_8', rarity: 'epic', value: 1575, chance: 5 },
+                { name: 'Дроп 20-4', image: 'dropcase20_4', rarity: 'epic', value: 2100, chance: 3 },
+                { name: 'Дроп 20-9', image: 'dropcase20_9', rarity: 'epic', value: 2700, chance: 1.5 },
+                { name: 'Дроп 20-5', image: 'dropcase20_5', rarity: 'legendary', value: 3900, chance: 0.4 },
+                { name: 'Дроп 20-10', image: 'dropcase20_10', rarity: 'legendary', value: 6000, chance: 0.1 }
             ]
         };
 
@@ -3157,6 +3169,7 @@ ${(() => {
                                 if (caseType == 4) return 32.0; // Шер
                                 if (caseType == 5) return 44.0; // Глист
                                 if (caseType == 7) return 26.0; // ЧВК
+                                if (caseType == 20) return 65.0; // Вечность - ИСПРАВЛЕНО
                                 return caseItems.filter(item => item.rarity !== 'legendary' && item.value < casePrice).reduce((sum, item) => sum + item.chance, 0);
                             })().toFixed(1)}%</strong><br>
                             🟡 Окупаемые дропы: <strong>${(() => {
@@ -3165,6 +3178,7 @@ ${(() => {
                                 if (caseType == 4) return 33.0; // Шер
                                 if (caseType == 5) return 36.5; // Глист
                                 if (caseType == 7) return 30.0; // ЧВК
+                                if (caseType == 20) return 25.0; // Вечность - ИСПРАВЛЕНО
                                 return caseItems.filter(item => item.rarity !== 'legendary' && item.value >= casePrice && item.value < casePrice * 2).reduce((sum, item) => sum + item.chance, 0);
                             })().toFixed(1)}%</strong><br>
                             🟢 Прибыльные дропы: <strong>${(() => {
@@ -3173,6 +3187,7 @@ ${(() => {
                                 if (caseType == 4) return 32.0; // Шер
                                 if (caseType == 5) return 16.0; // Глист
                                 if (caseType == 7) return 41.5; // ЧВК
+                                if (caseType == 20) return 10.0; // Вечность - ИСПРАВЛЕНО
                                 return caseItems.filter(item => item.rarity !== 'legendary' && item.value >= casePrice * 2 && item.value < casePrice * 5).reduce((sum, item) => sum + item.chance, 0);
                             })().toFixed(1)}%</strong><br>
                             💎 Джекпоты (Legendary): <strong>${(() => {
@@ -3180,7 +3195,8 @@ ${(() => {
                                 if (caseType == 3) return 1.5; // Жало
                                 if (caseType == 4) return 3.0; // Шер
                                 if (caseType == 5) return 3.5; // Глист
-                                if (caseType == 7) return 2.5; // ЧВК  
+                                if (caseType == 7) return 2.5; // ЧВК
+                                if (caseType == 20) return 0.5; // Вечность - ИСПРАВЛЕНО
                                 return caseItems.filter(item => item.rarity === 'legendary').reduce((sum, item) => sum + item.chance, 0);
                             })().toFixed(1)}%</strong>
                         </div>
@@ -3318,6 +3334,20 @@ ${(() => {
             // 🎰 СОЗДАЁМ РУЛЕТКУ - СНАЧАЛА ОПРЕДЕЛЯЕМ ВЫИГРЫШ!
             const actualWinningItem = getRandomItemByChance(availableItems);
             console.log(`🎯 РЕАЛЬНЫЙ ВЫИГРЫШ: ${actualWinningItem.name} (${actualWinningItem.value} ꙮ, шанс ${actualWinningItem.chance}%)`);
+            
+            // 💰 ОБНОВЛЯЕМ ЭКОНОМИЧЕСКИЙ БАЛАНС
+            const profit = actualWinningItem.value - currentCasePrice;
+            economyBalance += profit;
+            totalSpent += currentCasePrice;
+            totalWon += actualWinningItem.value;
+            
+            if (profit > 0) {
+                economyStreak = economyStreak > 0 ? economyStreak + 1 : 1;
+                console.log(`📈 Прибыль: +${profit} ꙮ, баланс экономики: ${economyBalance} ꙮ, серия: ${economyStreak}`);
+            } else {
+                economyStreak = economyStreak < 0 ? economyStreak - 1 : -1;
+                console.log(`📉 Убыток: ${profit} ꙮ, баланс экономики: ${economyBalance} ꙮ, серия: ${economyStreak}`);
+            }
             
             // Генерируем 30 дропов для визуального эффекта
             for (let i = 0; i < 30; i++) {
@@ -4248,6 +4278,11 @@ ${(() => {
                 debtCasesLeft = 0;
                 debtAmount = 500;
                 winglistItems = [];
+                // 🎲 СБРОС ЭКОНОМИЧЕСКИХ ДАННЫХ
+                economyBalance = 0;
+                economyStreak = 0;
+                totalSpent = 0;
+                totalWon = 0;
                 
                 updateBalance();
                 updateInventory();
@@ -4256,7 +4291,7 @@ ${(() => {
                 hideBlockBanner();
                 saveGameData();
                 
-                console.log('🛠️ DEV: Полный сброс выполнен');
+                console.log('🛠️ DEV: Полный сброс выполнен + экономика сброшена');
                 alert('🗑️ Полный сброс выполнен!');
             }
         };
@@ -6198,7 +6233,12 @@ ${(() => {
                 bonusHintShown: bonusHintShown || false,
                 warningMessageShown: warningMessageShown || false,
                 devModeActive: devModeActive || false,
-                bugWarningClosed: bugWarningClosed || false
+                bugWarningClosed: bugWarningClosed || false,
+                // 🎲 ЭКОНОМИЧЕСКИЕ ДАННЫЕ
+                economyBalance: economyBalance,
+                economyStreak: economyStreak,
+                totalSpent: totalSpent,
+                totalWon: totalWon
             };
             
             localStorage.setItem('caseOpeningGameData', JSON.stringify(gameData));
@@ -6234,6 +6274,12 @@ ${(() => {
                     // 🛠️ ЗАГРУЗКА РЕЖИМА РАЗРАБОТЧИКА
                     devModeActive = gameData.devModeActive || false;
                     bugWarningClosed = gameData.bugWarningClosed || false;
+                    
+                    // 🎲 ЗАГРУЗКА ЭКОНОМИЧЕСКИХ ДАННЫХ
+                    economyBalance = gameData.economyBalance || 0;
+                    economyStreak = gameData.economyStreak || 0;
+                    totalSpent = gameData.totalSpent || 0;
+                    totalWon = gameData.totalWon || 0;
                     
                     // Применяем аватар если есть
                     if (userAvatar) {
